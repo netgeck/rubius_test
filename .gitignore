@@ -1,0 +1,6 @@
+build/
+# проектные файлы NetBeans
+nbproject/
+# проектные файлы qt-creator
+*.pro
+*.pro.user
