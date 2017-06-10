@@ -12,9 +12,12 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-add_executable( ${target_name} main.cxx mainwindow.cxx )
+#include_directories( mainWindow )
+add_subdirectory( mainWindow )
 
-target_link_libraries(${target_name} ${QT_LIBRARIES})
+add_executable( ${target_name} main.cxx )
+
+target_link_libraries(${target_name} ${QT_LIBRARIES} mainWindow)
 
 install(TARGETS ${target_name} 
 	DESTINATION ${INSTALL_DIR}
