@@ -5,15 +5,16 @@
  * Created on 9 июня 2017 г., 21:19
  */
 
-#include <cstdlib>
-
-using namespace std;
+#include "mainwindow.h"
+#include <QApplication>
 
 /*
- * 
+ * @brief точка входа в программу клиента
  */
-int main(int argc, char** argv) {
+int main(int argc, char *argv[]) {
+	QApplication a(argc, argv);
+	MainWindow w;
+	w.show();
 
-	return 0;
+	return a.exec();
 }
-
