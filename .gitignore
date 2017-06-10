@@ -1,6 +1,16 @@
 build/
+
 # проектные файлы NetBeans
 nbproject/
+
 # проектные файлы qt-creator
+# файлы qt-шных проекта
 *.pro
 *.pro.user
+# файлы текущего проекта (импортирован как не qt-шный)
+rubius_test.config
+rubius_test.creator
+rubius_test.creator.user
+rubius_test.files
+rubius_test.includes
+
