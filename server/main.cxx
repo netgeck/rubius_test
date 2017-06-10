@@ -9,19 +9,16 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <thread>
 #include <memory>
-
-
+#include <iostream>
 #include <syslog.h>
 #include <string>
 
-
+#include <defPort.h>
+#include <tcpConnect.h>
 
 using namespace std;
 
 namespace basio = boost::asio;
-
-//Here is a simple synchronous server:using basio;
-typedef std::shared_ptr<basio::ip::tcp::socket> socket_ptr;
 
 void client_session(socket_ptr sock) {
 	while (true) {
@@ -32,19 +29,27 @@ void client_session(socket_ptr sock) {
 	}
 }
 
+void serverLoop(uint16_t port) {
+	tcpConnect tcp(port);
+	
+	while (true) {
+		tcp.accept();
+		std::thread(std::bind(client_session, tcp.getSock()));
+	}
+}
+
 /*
- * 
+ * @brief точка входа в программу клиента
+ * Будет использоваться синхронное API, следовательно многопоточная архитектура.
  */
-int main(int argc, char** argv) {
+int main(/*int argc, char** argv*/) {
 	syslog(LOG_NOTICE, "старт сервера");
 	
-	basio::io_service service;
-	basio::ip::tcp::endpoint ep(basio::ip::tcp::v4(), 2001); // listen on 2001
-	basio::ip::tcp::acceptor acc(service, ep);
-	while (true) {
-		socket_ptr sock(new basio::ip::tcp::socket(service));
-		acc.accept(*sock);
-		std::thread(std::bind(client_session, sock));
+	try {
+		serverLoop(PORT_DEFAULT);
+	} catch (boost::system::system_error e) {
+		std::cout << e.code() << std::endl;
+		syslog(LOG_ERR, "Ошибка: %s", e.code().message().c_str());
 	}
 
 	return 0;
