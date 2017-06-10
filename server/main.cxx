@@ -29,24 +29,28 @@ void client_session(socket_ptr sock) {
 	}
 }
 
-void serverLoop(uint16_t port) {
-	tcpConnect tcp(port);
-	
-	while (true) {
-		tcp.accept();
-		std::thread(std::bind(client_session, tcp.getSock()));
-	}
-}
-
 /*
  * @brief точка входа в программу клиента
  * Будет использоваться синхронное API, следовательно многопоточная архитектура.
  */
-int main(/*int argc, char** argv*/) {
-	syslog(LOG_NOTICE, "старт сервера");
+int main(int argc, char** argv) {
+	uint16_t port(0);
+	if (argc < 2) {
+		port = PORT_DEFAULT;
+		std::cout << "Порт не задан будет использован порт по умолчанию "
+			<< "(" << PORT_DEFAULT << ")" << std::endl;
+	} else if (argc == 2) {
+		port = std::atoi(argv[1]);
+	}
+	
+	syslog(LOG_NOTICE, "Cтарт сервера. Port: %d", port);
 	
 	try {
-		serverLoop(PORT_DEFAULT);
+		tcpConnect tcp(port);
+		while (true) {
+			tcp.accept();
+			std::thread(std::bind(client_session, tcp.getSock()));
+		}
 	} catch (boost::system::system_error e) {
 		std::cout << e.code() << std::endl;
 		syslog(LOG_ERR, "Ошибка: %s", e.code().message().c_str());

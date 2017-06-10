@@ -9,6 +9,8 @@
 #define __TCP_CONNECT__H__
 
 #include <stdint.h>
+#include <boost/asio.hpp>
+#include <boost/asio/ip/tcp.hpp>
 #include <boost/core/noncopyable.hpp>
 #include <memory>
 
