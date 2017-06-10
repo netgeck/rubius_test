@@ -16,6 +16,9 @@ public:
 
 private:
 	Ui::MainWindow *ui;
+
+public slots:
+    void send();
 };
 
 #endif // MAINWINDOW_H
