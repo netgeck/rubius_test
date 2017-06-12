@@ -15,6 +15,7 @@ public:
 	explicit MainWindow(QWidget *parent = 0);
 	~MainWindow();
 
+	void res(uint32_t);
 private:
 	Ui::MainWindow *ui;
 	uint16_t port;

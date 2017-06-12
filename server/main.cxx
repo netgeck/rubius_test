@@ -24,6 +24,7 @@ using namespace boost::asio;
 typedef boost::shared_ptr<ip::tcp::socket> socket_ptr;
 typedef std::shared_ptr<ip::tcp::acceptor> acceptor_ptr;
 acceptor_ptr gAcc;
+socket_ptr sock;
 
 void signalHandler(int signum) {
 	cout << "Interrupt signal (" << signum << ") received.\n";
@@ -42,10 +43,19 @@ void signalHandler(int signum) {
 	exit(signum);
 }
 
+void handler_write(const boost::system::error_code& error, std::size_t bytes_transferred){
+	if (error) return;
+	std::cout << "Передан фейковый ответ" << std::endl;
+}
+
 char data[512];
 void read_handler(const boost::system::error_code& error, std::size_t bytes_transferred) {
+	if (error) return;
 	std::string str(data, bytes_transferred);
 	std::cout << "Получено: \"" << str << "\"" << std::endl;
+	
+	uint32_t fakeResult = 3;
+	sock->async_write_some(buffer(&fakeResult, sizeof(fakeResult)), handler_write);
 }
 
 void start_accept(socket_ptr sock);
@@ -57,6 +67,8 @@ void handle_accept(socket_ptr sock, const boost::system::error_code & err) {
 	sock->async_read_some(basio::buffer(data), read_handler);
 //	socket_ptr sock(new ip::tcp::socket(service));
 }
+
+
 
 void start_accept(socket_ptr sock) {
 	using namespace std::placeholders;
@@ -90,7 +102,7 @@ int main(int argc, char** argv) {
 		io_service service;
 		ip::tcp::endpoint ep(ip::tcp::v4(), port); 
 		gAcc.reset(new ip::tcp::acceptor(service, ep));
-		socket_ptr sock(new ip::tcp::socket(service));
+		sock.reset(new ip::tcp::socket(service));
 		start_accept(sock);
 		service.run();
 	} catch (boost::system::system_error e) {
