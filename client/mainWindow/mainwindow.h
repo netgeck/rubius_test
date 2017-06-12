@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <string>
 
 namespace Ui {
 	class MainWindow;
@@ -16,9 +17,15 @@ public:
 
 private:
 	Ui::MainWindow *ui;
+	uint16_t port;
+	std::string host;
+	
+	void connection();
 
 public slots:
-    void send();
+	void send();
+	void hostSet();
+	void portSet();
 };
 
 #endif // MAINWINDOW_H

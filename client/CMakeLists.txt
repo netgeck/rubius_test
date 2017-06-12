@@ -12,7 +12,6 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-#include_directories( mainWindow )
 add_subdirectory( mainWindow )
 
 add_executable( ${target_name} main.cxx )

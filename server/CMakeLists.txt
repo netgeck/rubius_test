@@ -6,7 +6,9 @@ add_executable( ${target_name}
 
 target_link_libraries( ${target_name} 
 	pthread
-	tcpConnect
+	boost_system
 )
+
+target_compile_definitions( ${target_name} PRIVATE PROGNAME="${target_name}" )
 
 install(TARGETS ${target_name} DESTINATION ${INSTALL_DIR})
