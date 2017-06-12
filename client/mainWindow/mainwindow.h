@@ -20,13 +20,16 @@ private:
 	Ui::MainWindow *ui;
 	uint16_t port;
 	std::string host;
+	std::string word;
 	
 	void connection();
 
 public slots:
 	void send();
+	void chooseFile();
 	void hostSet();
 	void portSet();
+	void wordSet();
 };
 
 #endif // MAINWINDOW_H
