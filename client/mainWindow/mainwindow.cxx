@@ -32,7 +32,10 @@ host("127.0.0.1") {
 	QObject::connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readAnswer()));
 	ui->lineEdit_host->setText(host.c_str());
 	ui->lineEdit_port->setText(boost::lexical_cast<std::string>(port).c_str());
-	
+	ui->lineEdit_host->setInputMask("000.000.000.000;_");
+	ui->lineEdit_port->setValidator( new QIntValidator( 0, UINT16_MAX ) );
+	// Только буквы кириллического и латинского алфавита и цифры
+	ui->lineEdit_word->setValidator(new QRegExpValidator(QRegExp(tr("^[а-яА-ЯёЁa-zA-Z0-9]+$/u")), this));
 	ui->groupBox_work->setEnabled(false);
 }
 
