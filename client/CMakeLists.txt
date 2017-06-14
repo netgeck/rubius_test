@@ -3,7 +3,7 @@ set(target_name client)
 cmake_minimum_required(VERSION  3.1.0)
 project(${target_name})
 
-find_package(Qt4 REQUIRED)
+find_package(Qt4 REQUIRED QtCore QtGui QtNetwork)
 include(${QT_USE_FILE})
 #add_definitions(${QT_DEFINITIONS})
 

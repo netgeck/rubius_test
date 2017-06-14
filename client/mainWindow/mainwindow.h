@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QTcpSocket>
 #include <string>
 
 namespace Ui {
@@ -21,15 +22,19 @@ private:
 	uint16_t port;
 	std::string host;
 	std::string word;
+	QTcpSocket *tcpSocket;
 	
-	void connection();
-
+private slots:
+	void displayError(QAbstractSocket::SocketError socketError);
+	void readAnswer();
+	
 public slots:
 	void send();
 	void chooseFile();
 	void hostSet();
 	void portSet();
 	void wordSet();
+	void connection();
 };
 
 #endif // MAINWINDOW_H

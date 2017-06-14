@@ -2,22 +2,14 @@
 #include <ui_mainwindow.h>
 #include <QObject>
 #include <QFileDialog>
+#include <QMessageBox>
 
 #include <boost/lexical_cast.hpp>
 #include <string>
 #include <stdint.h>
 
-#include <boost/asio.hpp>
-#include <boost/asio/ip/tcp.hpp>
-#include <thread>
 #include <iostream>
 #include <defPort.h>
-
-using namespace boost::asio;
-typedef boost::shared_ptr<ip::tcp::socket> socket_ptr;
-socket_ptr gSock;
-std::function<void(uint32_t)> result;
-std::function<std::string()> getWord;
 
 MainWindow::MainWindow(QWidget *parent) :
 QMainWindow(parent),
@@ -26,78 +18,45 @@ port(PORT_DEFAULT),
 host("127.0.0.1") {
 	using namespace std::placeholders;
 	ui->setupUi(this);
+	
+	tcpSocket = new QTcpSocket(this);
+	
 	QObject::connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(send()));
-	QObject::connect(ui->lineEdit, SIGNAL(editingFinished()), this, SLOT(hostSet()));
-	QObject::connect(ui->lineEdit_2, SIGNAL(editingFinished()), this, SLOT(portSet()));
-	QObject::connect(ui->pushButton_2, SIGNAL(clicked()), this, SLOT(chooseFile()));
-	QObject::connect(ui->lineEdit_3, SIGNAL(editingFinished()), this, SLOT(wordSet()));
-	ui->lineEdit->setText(host.c_str());
-	ui->lineEdit_2->setText(boost::lexical_cast<std::string>(port).c_str());
-
-	//	result = [=](uint32_t result) {	this->res(result);};
-	result = std::bind(&MainWindow::res, this, _1);
-	getWord = [this]()->std::string {
-		return word;
-	};
+	QObject::connect(ui->lineEdit_host, SIGNAL(editingFinished()), this, SLOT(hostSet()));
+	QObject::connect(ui->lineEdit_port, SIGNAL(editingFinished()), this, SLOT(portSet()));
+	QObject::connect(ui->pushButton_fChoose, SIGNAL(clicked()), this, SLOT(chooseFile()));
+	QObject::connect(ui->lineEdit_word, SIGNAL(editingFinished()), this, SLOT(wordSet()));
+	QObject::connect(ui->pushButton_connect, SIGNAL(clicked()), this, SLOT(connection()));
+	QObject::connect(tcpSocket, SIGNAL(error(QAbstractSocket::SocketError)),
+            this, SLOT(displayError(QAbstractSocket::SocketError)));
+	QObject::connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readAnswer()));
+	ui->lineEdit_host->setText(host.c_str());
+	ui->lineEdit_port->setText(boost::lexical_cast<std::string>(port).c_str());
 }
 
 MainWindow::~MainWindow() {
 	delete ui;
 }
 
-void client_session(socket_ptr sock) {
-	while (true) {
-		char data[512];
-		size_t len = sock->read_some(buffer(data));
-		if (len > 0)
-			write(*sock, buffer("Test", 4));
-	}
-}
-
 char data[sizeof(uint32_t)];
-
-void read_handler(const boost::system::error_code& error, std::size_t bytes_transferred) {
-	if (error) return;
-	
-	uint32_t res = *data;
-	std::cout << "Получен ответ: " << res << std::endl;
-	result(res);
-}
-
-void write_handler(const boost::system::error_code& error, std::size_t bytes_transferred) {
-	if(error) return;
-	
-	// Будем ждать ответ
-	gSock->async_read_some(buffer(data), read_handler);
-}
-
-void connect_handler(const boost::system::error_code & err) {
-	if (err) {
-		std::cout << "Соединение не установлено" << std::endl;
-		return;
-	}
-	std::cout << "Соединение установлено" << std::endl;
-	
-	gSock->async_write_some(buffer(getWord().data(), getWord().size()), write_handler);
-}
 
 void MainWindow::res(uint32_t res) {
 	ui->label->setText(tr(boost::lexical_cast<std::string>(res).c_str()));
 }
 
+void MainWindow::connection() {
+	ui->pushButton_connect->setEnabled(false);
+//	tcpSocket->connectToHost(hostLineEdit->text(),
+//                             portLineEdit->text().toInt());
+	tcpSocket->connectToHost(ui->lineEdit_host->text(),
+                             ui->lineEdit_port->text().toUInt());
+}
+
 void MainWindow::send() {
 	static uint32_t count = 0;
-
-	io_service service;
-//	ip::tcp::endpoint ep(ip::address::from_string(host), port);
-	ip::tcp::resolver resolver(service);
-	ip::tcp::resolver::query query(host, boost::lexical_cast<std::string>(port));
-	ip::tcp::resolver::iterator iter = resolver.resolve( query);
-	ip::tcp::endpoint ep = *iter;
-	std::cout << ep.address().to_string() << std::endl;
-	gSock.reset(new ip::tcp::socket(service));
-	gSock->async_connect(ep, connect_handler);
-	service.run();
+	
+//	gSock->async_write_some(buffer(getWord().data(), getWord().size()), write_handler);
+	tcpSocket->write(word.data(), word.size());
 }
 
 void MainWindow::chooseFile() {
@@ -109,15 +68,47 @@ void MainWindow::chooseFile() {
 }
 
 void MainWindow::hostSet() {
-	host = ui->lineEdit->text().toStdString();
+	host = ui->lineEdit_host->text().toStdString();
 	std::cout << "Хост задан: \"" << host << "\"" << std::endl;
 }
 
 void MainWindow::portSet() {
-	port = ui->lineEdit_2->text().toUInt();
+	port = ui->lineEdit_port->text().toUInt();
 	std::cout << "порт задан: \"" << port << "\"" << std::endl;
 }
 
 void MainWindow::wordSet() {
-	word = ui->lineEdit_3->text().toStdString();
+	word = ui->lineEdit_word->text().toStdString();
+}
+
+void MainWindow::displayError(QAbstractSocket::SocketError socketError) {
+	switch (socketError) {
+		case QAbstractSocket::RemoteHostClosedError:
+			break;
+		case QAbstractSocket::HostNotFoundError:
+			QMessageBox::information(this, tr("Клиент"),
+				tr("Хост не найден. Проверьте правильно ли "
+				"введено имя хоста и порт"));
+			break;
+		case QAbstractSocket::ConnectionRefusedError:
+			QMessageBox::information(this, tr("Клиент"),
+				tr("Подключение не установлено. "
+				"Убедитесь что сервер запущен, "
+				"и проверьте правильно ли заданы хост и порт."));
+			break;\
+		default:
+			QMessageBox::information(this, tr("Клиент"),
+				tr("Получена ошибка: %1.")
+				.arg(tcpSocket->errorString()));
+	}
+
+	ui->pushButton_connect->setEnabled(true);
+}
+
+void MainWindow::readAnswer() {
+	uint32_t result;
+	std::vector<char> d(sizeof(result));
+	tcpSocket->read(d.data(), d.size());
+	result = *reinterpret_cast<uint32_t*>(d.data());
+	res(result);
 }
