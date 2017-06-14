@@ -32,6 +32,8 @@ host("127.0.0.1") {
 	QObject::connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readAnswer()));
 	ui->lineEdit_host->setText(host.c_str());
 	ui->lineEdit_port->setText(boost::lexical_cast<std::string>(port).c_str());
+	
+	ui->groupBox_work->setEnabled(false);
 }
 
 MainWindow::~MainWindow() {
@@ -50,6 +52,7 @@ void MainWindow::connection() {
 //                             portLineEdit->text().toInt());
 	tcpSocket->connectToHost(ui->lineEdit_host->text(),
                              ui->lineEdit_port->text().toUInt());
+	ui->groupBox_work->setEnabled(true);
 }
 
 void MainWindow::send() {
@@ -82,6 +85,8 @@ void MainWindow::wordSet() {
 }
 
 void MainWindow::displayError(QAbstractSocket::SocketError socketError) {
+	ui->groupBox_work->setEnabled(false);
+	
 	switch (socketError) {
 		case QAbstractSocket::RemoteHostClosedError:
 			break;
@@ -95,11 +100,10 @@ void MainWindow::displayError(QAbstractSocket::SocketError socketError) {
 				tr("Подключение не установлено. "
 				"Убедитесь что сервер запущен, "
 				"и проверьте правильно ли заданы хост и порт."));
-			break;\
+			break;
 		default:
 			QMessageBox::information(this, tr("Клиент"),
-				tr("Получена ошибка: %1.")
-				.arg(tcpSocket->errorString()));
+				tr("Получена ошибка: %1.").arg(tcpSocket->errorString()));
 	}
 
 	ui->pushButton_connect->setEnabled(true);
