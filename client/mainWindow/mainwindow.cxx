@@ -35,7 +35,7 @@ host("127.0.0.1") {
 	ui->lineEdit_host->setInputMask("000.000.000.000;_");
 	ui->lineEdit_port->setValidator( new QIntValidator( 0, UINT16_MAX ) );
 	// Только буквы кириллического и латинского алфавита и цифры
-	ui->lineEdit_word->setValidator(new QRegExpValidator(QRegExp(tr("^[а-яА-ЯёЁa-zA-Z0-9]+$/u")), this));
+	ui->lineEdit_word->setValidator(new QRegExpValidator(QRegExp(tr("^[а-яА-ЯёЁa-zA-Z0-9]+$")), this));
 	ui->groupBox_work->setEnabled(false);
 }
 
@@ -61,6 +61,7 @@ void MainWindow::connection() {
 void MainWindow::send() {
 	static uint32_t count = 0;
 	
+	std::cout << "Отправляем слово \"" << word << "\"" << std::endl;
 //	gSock->async_write_some(buffer(getWord().data(), getWord().size()), write_handler);
 	tcpSocket->write(word.data(), word.size());
 }
@@ -85,6 +86,7 @@ void MainWindow::portSet() {
 
 void MainWindow::wordSet() {
 	word = ui->lineEdit_word->text().toStdString();
+	std::cout << "Задаётся слово: \"" << word << "\"" << std::endl;
 }
 
 void MainWindow::displayError(QAbstractSocket::SocketError socketError) {
