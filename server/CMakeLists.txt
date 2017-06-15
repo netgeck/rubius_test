@@ -7,6 +7,7 @@ add_executable( ${target_name}
 target_link_libraries( ${target_name} 
 	pthread
 	boost_system
+	MessagePack
 )
 
 target_compile_definitions( ${target_name} PRIVATE PROGNAME="${target_name}" )

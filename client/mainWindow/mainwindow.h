@@ -5,6 +5,8 @@
 #include <QTcpSocket>
 #include <string>
 
+#include <MsgPack_types.h>
+
 namespace Ui {
 	class MainWindow;
 }
@@ -23,6 +25,7 @@ private:
 	std::string host;
 	std::string word;
 	QTcpSocket *tcpSocket;
+	MsgPack::map_description mpd;
 	
 private slots:
 	void displayError(QAbstractSocket::SocketError socketError);

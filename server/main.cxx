@@ -16,6 +16,10 @@
 #include <functional>
 
 #include <defPort.h>
+#include <MsgPack_types.h>
+#include <common.h>
+#include <MsgPack_pack.h>
+#include <MsgPack_unpack.h>
 
 using namespace std;
 
@@ -48,13 +52,25 @@ void handler_write(const boost::system::error_code& error, std::size_t bytes_tra
 }
 
 char data[512];
+MsgPack::package pkg;
 void read_handler(const boost::system::error_code& error, std::size_t bytes_transferred) {
 	if (error) return;
-	std::string str(data, bytes_transferred);
-	std::cout << "Получено: \"" << str << "\"" << std::endl;
+	
+	pkg.insert(pkg.end(), data, data + bytes_transferred);
+	
+	if (MsgPack::isPgkCorrect(pkg)) {
+		std::cout << "Пакет получен" << std::endl;
+		MsgPack::map_description mpd = MsgPack::unpack::map(pkg);
+		auto wordPkg = mpd.at(MsgPack::pack::str("word"));
+		std::cout << "Получено: \"" << MsgPack::unpack::str(wordPkg) << "\"" << std::endl;
+	} else {
+		std::cout << "Пакет не корректен. Размер пакета: " 
+			<< pkg.size() << "байт. Ждём продолжения" << std::endl;
+	}
 	
 	uint32_t fakeResult = 3;
-	gSock->async_write_some(buffer(&fakeResult, sizeof(fakeResult)), handler_write);
+	MsgPack::package result = MsgPack::pack::integer<uint32_t>(fakeResult);
+	gSock->async_write_some(buffer(result.data(), result.size()), handler_write);
 }
 
 void handle_accept(socket_ptr sock, const boost::system::error_code & err) {

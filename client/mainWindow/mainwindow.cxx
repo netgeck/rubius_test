@@ -10,6 +10,10 @@
 
 #include <iostream>
 #include <defPort.h>
+#include "MsgPack_pack.h"
+#include "common.h"
+#include "MsgPack_unpack.h"
+#include <MsgPack_types.h>
 
 MainWindow::MainWindow(QWidget *parent) :
 QMainWindow(parent),
@@ -43,8 +47,6 @@ MainWindow::~MainWindow() {
 	delete ui;
 }
 
-char data[sizeof(uint32_t)];
-
 void MainWindow::res(uint32_t res) {
 	ui->label->setText(tr(boost::lexical_cast<std::string>(res).c_str()));
 }
@@ -59,11 +61,10 @@ void MainWindow::connection() {
 }
 
 void MainWindow::send() {
-	static uint32_t count = 0;
+	auto pkg = MsgPack::pack::map(mpd);
 	
-	std::cout << "Отправляем слово \"" << word << "\"" << std::endl;
-//	gSock->async_write_some(buffer(getWord().data(), getWord().size()), write_handler);
-	tcpSocket->write(word.data(), word.size());
+	tcpSocket->write(reinterpret_cast<char*>(pkg.data()), pkg.size());
+	std::cout << "Передан пакет " << pkg.size() << "байт" << std::endl;
 }
 
 void MainWindow::chooseFile() {
@@ -72,6 +73,11 @@ void MainWindow::chooseFile() {
 	auto fileName = QFileDialog::getOpenFileName(this,
 		tr("Open text"), QDir::homePath(), tr("Text Files(*.txt)"));
 	ui->label_4->setText(fileName);
+	
+	// TODO: маппировать файл
+	std::vector<char> mappedFile;
+	
+	mpd[MsgPack::pack::str("file")] = MsgPack::pack::bin(mappedFile.data(), mappedFile.size());
 }
 
 void MainWindow::hostSet() {
@@ -87,6 +93,7 @@ void MainWindow::portSet() {
 void MainWindow::wordSet() {
 	word = ui->lineEdit_word->text().toStdString();
 	std::cout << "Задаётся слово: \"" << word << "\"" << std::endl;
+	mpd[MsgPack::pack::str("word")] = MsgPack::pack::str(word);
 }
 
 void MainWindow::displayError(QAbstractSocket::SocketError socketError) {
@@ -114,10 +121,18 @@ void MainWindow::displayError(QAbstractSocket::SocketError socketError) {
 	ui->pushButton_connect->setEnabled(true);
 }
 
+MsgPack::package pkgRes;
 void MainWindow::readAnswer() {
 	uint32_t result;
-	std::vector<char> d(sizeof(result));
-	tcpSocket->read(d.data(), d.size());
-	result = *reinterpret_cast<uint32_t*>(d.data());
-	res(result);
+	std::vector<char> d(1024);
+	int r = tcpSocket->read(d.data(), d.size());
+	
+	pkgRes.insert(pkgRes.end(), d.begin(), d.begin() + r);
+	
+	if (MsgPack::isPgkCorrect(pkgRes)) {
+		res(MsgPack::unpack::integer<uint32_t>(pkgRes));
+	} else {
+		std::cout << "Пакет не корректен. Размер пакета: " 
+			<< pkgRes.size() << "байт. Ждём продолжения" << std::endl;
+	}
 }
