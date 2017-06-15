@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <iostream>
+#include <fstream>
 #include <defPort.h>
 #include "MsgPack_pack.h"
 #include "common.h"
@@ -68,14 +69,28 @@ void MainWindow::send() {
 }
 
 void MainWindow::chooseFile() {
-//	QFileDialog fdial()
-	
 	auto fileName = QFileDialog::getOpenFileName(this,
 		tr("Open text"), QDir::homePath(), tr("Text Files(*.txt)"));
 	ui->label_file->setText(fileName);
 	
 	// TODO: маппировать файл
 	std::vector<char> mappedFile;
+	
+	// Маппинг файла
+	std::streampos size;
+	std::ifstream file(fileName.toStdString(), std::ios::in | std::ios::binary | std::ios::ate);
+	if (file.is_open()) {
+		size = file.tellg();
+		mappedFile.resize(size);
+		file.seekg(0, std::ios::beg);
+		file.read(mappedFile.data(), mappedFile.size());
+		file.close();
+
+		std::cout << "Файл смапирован" << std::endl;;
+	} else {
+		std::cout << "Не удалось открыть файл" << std::endl;
+	}
+	
 	
 	mpd[MsgPack::pack::str("file")] = MsgPack::pack::bin(mappedFile.data(), mappedFile.size());
 }
