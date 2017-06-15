@@ -14,6 +14,7 @@
 #include <string>
 #include <csignal>
 #include <functional>
+#include <algorithm>
 
 #include <defPort.h>
 #include <MsgPack_types.h>
@@ -53,24 +54,60 @@ void handler_write(const boost::system::error_code& error, std::size_t bytes_tra
 
 char data[512];
 MsgPack::package pkg;
+
+bool isValid (char c) {
+	static std::locale loc;
+	return std::isalpha(c, loc) || std::isdigit(c, loc);
+}
+
+void cutter(std::map<std::string, size_t> &words, std::string::iterator begin, std::string::iterator end) {
+	auto it_correct = std::find_if(begin, end, isValid);
+	if (it_correct == end) {
+		return;
+	}
+	
+	auto it_incorrect = std::find_if_not(it_correct, end, isValid);
+	words[std::string(it_correct, it_incorrect)]++; // добавляем слово и увеличиваем счётчик
+//	std::string lastAdded(it_correct, it_incorrect);
+//	std::cout << "Добавлено слово \"" << lastAdded << "\"  счетчик: " << words.at(lastAdded) << std::endl;
+	
+	if (it_incorrect == end) {
+		return;
+	}
+	
+	cutter(words, it_incorrect, end);
+}
+
 void read_handler(const boost::system::error_code& error, std::size_t bytes_transferred) {
 	if (error) return;
 	
+	uint32_t res(0);
 	pkg.insert(pkg.end(), data, data + bytes_transferred);
 	
 	if (MsgPack::isPgkCorrect(pkg)) {
 		std::cout << "Пакет получен" << std::endl;
 		MsgPack::map_description mpd = MsgPack::unpack::map(pkg);
 		auto wordPkg = mpd.at(MsgPack::pack::str("word"));
-		std::cout << "Получено: \"" << MsgPack::unpack::str(wordPkg) << "\"" << std::endl;
+		std::string word = MsgPack::unpack::str(wordPkg);
+		std::cout << "Получено слово: \"" << word << "\"" << std::endl;
+		
+		auto filePkg = mpd.at(MsgPack::pack::str("file"));
+		std::vector<char> mappedFile = MsgPack::unpack::bin(filePkg);
+		std::string file(mappedFile.begin(), mappedFile.end());
+		
+		std::map<std::string, size_t> words;
+		
+		cutter(words, file.begin(), file.end());
+		
+		res = words.count(word) ? words[word] : 0;
 	} else {
 		std::cout << "Пакет не корректен. Размер пакета: " 
 			<< pkg.size() << "байт. Ждём продолжения" << std::endl;
 	}
 	
-	uint32_t fakeResult = 3;
-	MsgPack::package result = MsgPack::pack::integer<uint32_t>(fakeResult);
-	gSock->async_write_some(buffer(result.data(), result.size()), handler_write);
+	
+	MsgPack::package resPkg = MsgPack::pack::integer<uint32_t>(res);
+	gSock->async_write_some(buffer(resPkg.data(), resPkg.size()), handler_write);
 }
 
 void handle_accept(socket_ptr sock, const boost::system::error_code & err) {
