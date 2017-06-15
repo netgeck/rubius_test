@@ -27,6 +27,8 @@ private:
 	QTcpSocket *tcpSocket;
 	MsgPack::map_description mpd;
 	
+	void checkSendAbility();
+	
 private slots:
 	void displayError(QAbstractSocket::SocketError socketError);
 	void readAnswer();

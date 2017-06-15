@@ -26,7 +26,7 @@ host("127.0.0.1") {
 	
 	tcpSocket = new QTcpSocket(this);
 	
-	QObject::connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(send()));
+	QObject::connect(ui->pushButton_send, SIGNAL(clicked()), this, SLOT(send()));
 	QObject::connect(ui->lineEdit_host, SIGNAL(editingFinished()), this, SLOT(hostSet()));
 	QObject::connect(ui->lineEdit_port, SIGNAL(editingFinished()), this, SLOT(portSet()));
 	QObject::connect(ui->pushButton_fChoose, SIGNAL(clicked()), this, SLOT(chooseFile()));
@@ -42,6 +42,7 @@ host("127.0.0.1") {
 	// Только буквы кириллического и латинского алфавита и цифры
 	ui->lineEdit_word->setValidator(new QRegExpValidator(QRegExp(tr("^[а-яА-ЯёЁa-zA-Z0-9]+$")), this));
 	ui->groupBox_work->setEnabled(false);
+	checkSendAbility();
 }
 
 MainWindow::~MainWindow() {
@@ -50,6 +51,7 @@ MainWindow::~MainWindow() {
 
 void MainWindow::res(uint32_t res) {
 	ui->label_res->setText(tr(boost::lexical_cast<std::string>(res).c_str()));
+	ui->pushButton_send->setEnabled(true);
 }
 
 void MainWindow::connection() {
@@ -62,6 +64,8 @@ void MainWindow::connection() {
 }
 
 void MainWindow::send() {
+	ui->pushButton_send->setEnabled(false);
+	ui->label_res->clear();
 	auto pkg = MsgPack::pack::map(mpd);
 	
 	tcpSocket->write(reinterpret_cast<char*>(pkg.data()), pkg.size());
@@ -93,6 +97,8 @@ void MainWindow::chooseFile() {
 	
 	
 	mpd[MsgPack::pack::str("file")] = MsgPack::pack::bin(mappedFile.data(), mappedFile.size());
+	
+	checkSendAbility();
 }
 
 void MainWindow::hostSet() {
@@ -109,7 +115,19 @@ void MainWindow::wordSet() {
 	word = ui->lineEdit_word->text().toStdString();
 	std::cout << "Задаётся слово: \"" << word << "\"" << std::endl;
 	mpd[MsgPack::pack::str("word")] = MsgPack::pack::str(word);
+	
+	checkSendAbility();
 }
+
+void MainWindow::checkSendAbility() {
+	// Должны быть заданы и слово и файл
+	if (mpd.count(MsgPack::pack::str("word")) && mpd.count(MsgPack::pack::str("file"))){
+		ui->pushButton_send->setEnabled(true);
+	} else {
+		ui->pushButton_send->setEnabled(false);
+	}
+}
+
 
 void MainWindow::displayError(QAbstractSocket::SocketError socketError) {
 	ui->groupBox_work->setEnabled(false);
