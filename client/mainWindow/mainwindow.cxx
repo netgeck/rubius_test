@@ -48,11 +48,11 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::res(uint32_t res) {
-	ui->label->setText(tr(boost::lexical_cast<std::string>(res).c_str()));
+	ui->label_res->setText(tr(boost::lexical_cast<std::string>(res).c_str()));
 }
 
 void MainWindow::connection() {
-	ui->pushButton_connect->setEnabled(false);
+	ui->groupBox_net->setEnabled(false);
 //	tcpSocket->connectToHost(hostLineEdit->text(),
 //                             portLineEdit->text().toInt());
 	tcpSocket->connectToHost(ui->lineEdit_host->text(),
@@ -72,7 +72,7 @@ void MainWindow::chooseFile() {
 	
 	auto fileName = QFileDialog::getOpenFileName(this,
 		tr("Open text"), QDir::homePath(), tr("Text Files(*.txt)"));
-	ui->label_4->setText(fileName);
+	ui->label_file->setText(fileName);
 	
 	// TODO: маппировать файл
 	std::vector<char> mappedFile;
@@ -118,7 +118,7 @@ void MainWindow::displayError(QAbstractSocket::SocketError socketError) {
 				tr("Получена ошибка: %1.").arg(tcpSocket->errorString()));
 	}
 
-	ui->pushButton_connect->setEnabled(true);
+	ui->groupBox_net->setEnabled(true);
 }
 
 MsgPack::package pkgRes;

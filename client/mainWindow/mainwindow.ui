@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>251</width>
-    <height>402</height>
+    <height>358</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,7 +20,7 @@
       <x>0</x>
       <y>0</y>
       <width>251</width>
-      <height>161</height>
+      <height>121</height>
      </rect>
     </property>
     <property name="title">
@@ -85,38 +85,12 @@
       <string>Соденинение</string>
      </property>
     </widget>
-    <widget class="QLabel" name="label_status">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>130</y>
-       <width>61</width>
-       <height>17</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Статус:</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_status_out">
-     <property name="geometry">
-      <rect>
-       <x>70</x>
-       <y>130</y>
-       <width>70</width>
-       <height>17</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
    </widget>
    <widget class="QGroupBox" name="groupBox_work">
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>180</y>
+      <y>140</y>
       <width>251</width>
       <height>171</height>
      </rect>
@@ -137,7 +111,7 @@
       <string>Выбор файла</string>
      </property>
     </widget>
-    <widget class="QLabel" name="label_4">
+    <widget class="QLabel" name="label_file">
      <property name="geometry">
       <rect>
        <x>0</x>
@@ -153,7 +127,7 @@
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
-    <widget class="QLabel" name="label_5">
+    <widget class="QLabel" name="label_word">
      <property name="geometry">
       <rect>
        <x>0</x>
@@ -189,7 +163,7 @@
       <string>Отправить</string>
      </property>
     </widget>
-    <widget class="QLabel" name="label">
+    <widget class="QLabel" name="label_resOut">
      <property name="geometry">
       <rect>
        <x>80</x>
@@ -202,7 +176,7 @@
       <string/>
      </property>
     </widget>
-    <widget class="QLabel" name="label_6">
+    <widget class="QLabel" name="label_res">
      <property name="geometry">
       <rect>
        <x>0</x>
