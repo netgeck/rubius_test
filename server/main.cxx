@@ -26,20 +26,6 @@ namespace basio = boost::asio;
 using namespace boost::asio;
 typedef std::shared_ptr<ip::tcp::socket> socket_ptr;
 
-void signalHandler(int signum) {
-	cout << "Interrupt signal (" << signum << ") received.\n";
-
-	switch (signum) {
-	case SIGINT:
-	case SIGTERM:
-//		gSock->cancel();
-//		gSock->close();
-		break;
-	}
-
-	exit(signum);
-}
-
 /**
  * @brief Проверка символа на допустимость использования в слове
  * @param c	символ
@@ -183,10 +169,6 @@ int main(int argc, char** argv) {
 	}
 	
 	syslog(LOG_NOTICE, "Cтарт сервера. Port: %d", port);
-	
-	// Регистрация обработчика сигналов
-	signal(SIGINT, signalHandler);
-	signal(SIGTERM, signalHandler);
 	
 	try {
 		boost::asio::io_service io_service;
