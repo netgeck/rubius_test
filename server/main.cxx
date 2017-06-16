@@ -25,7 +25,6 @@
 
 using namespace std;
 
-namespace basio = boost::asio;
 using namespace boost::asio;
 typedef std::shared_ptr<ip::tcp::socket> socket_ptr;
 typedef std::map<std::string, size_t> word_count;
@@ -85,13 +84,17 @@ void cutter(word_count& words, std::wstring::iterator begin, std::wstring::itera
 	cutter(words, it_incorrect, end);
 }
 
+/**
+ * @brief Класс сессия.
+ * Слушает входящие пакеты, обрабатывает их и отправляет результат клиенту.
+ */
 class clientSession {
 public:
 	clientSession(socket_ptr pSock) : m_pSock(pSock) {
 	}
 	
 	void readPkg(){
-		m_pSock->async_read_some(basio::buffer(m_buffer), 
+		m_pSock->async_read_some(boost::asio::buffer(m_buffer), 
 			[this](const boost::system::error_code& err, std::size_t bytes_transferred) {
 				if (err) {
 					syslog(LOG_ERR, "start: %s", err.message().c_str());
@@ -109,7 +112,7 @@ private:
 		m_recvPkg.insert(m_recvPkg.end(), m_buffer, m_buffer + bytes_transferred);
 
 		if (MsgPack::isPgkCorrect(m_recvPkg)) {
-			handlePkg_n_answer();
+			handlePkg();
 		} else {
 //			std::cout << "Принятый пакет не корректен. Размер пакета: " 
 //				<< m_recvPkg.size() << "байт. Ждём продолжения" << std::endl;
@@ -117,7 +120,7 @@ private:
 		}
 	}
 	
-	void handlePkg_n_answer(){
+	void handlePkg(){
 		uint32_t res(0);
 //		std::cout << "Пакет получен" << std::endl;
 		MsgPack::map_description mpd = MsgPack::unpack::map(m_recvPkg);
@@ -153,6 +156,10 @@ private:
 	}
 };
 
+/**
+ * @brief Класс сервер.
+ * Принимает соединения. Запускает объект-сессию для каждого нового соединения.
+ */
 class server {
 public:
 	server(boost::asio::io_service& io_service,
