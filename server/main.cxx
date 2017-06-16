@@ -67,8 +67,11 @@ public:
 	
 	void start(){
 		m_pSock->async_read_some(basio::buffer(m_buffer), 
-			[this](const boost::system::error_code& error, std::size_t bytes_transferred) {
-				if (error) return;
+			[this](const boost::system::error_code& err, std::size_t bytes_transferred) {
+				if (err) {
+					syslog(LOG_ERR, "start: %s", err.message().c_str());
+					return;
+				}
 				handlePkg_n_answer(bytes_transferred);
 			});
 	}
@@ -104,9 +107,12 @@ public:
 	void answer(uint32_t res) {
 		MsgPack::package resPkg = MsgPack::pack::integer<uint32_t>(res);
 		m_pSock->async_write_some(buffer(resPkg.data(), resPkg.size()), 
-			[this](const boost::system::error_code& error, std::size_t bytes_transferred) {
-				if (error) return;
-				std::cout << "Передан ответ" << std::endl;
+			[this](const boost::system::error_code& err, std::size_t bytes_transferred) {
+				if (err) {
+					syslog(LOG_ERR, "answer: %s", err.message().c_str());
+					return;
+				}
+				syslog(LOG_INFO, "Передан ответ");
 				m_recvPkg.clear();
 				start();
 			});
@@ -140,6 +146,8 @@ private:
 					syslog(LOG_INFO, "Принято соединение");
 					m_sessions.emplace_back(new clientSession(m_pSock));
 					m_sessions.back()->start();
+				} else {
+					syslog(LOG_ERR, "accept: %s", err.message().c_str());
 				}
 
 				accept();
