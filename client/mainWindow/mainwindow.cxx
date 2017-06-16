@@ -7,7 +7,7 @@
 #include <boost/lexical_cast.hpp>
 #include <string>
 #include <stdint.h>
-#include <iostream>
+//#include <iostream>
 #include <fstream>
 
 #include <defPort.h>
@@ -71,7 +71,7 @@ void MainWindow::send() {
 	auto pkg = MsgPack::pack::map(mpd);
 	
 	tcpSocket->write(reinterpret_cast<char*>(pkg.data()), pkg.size());
-	std::cout << "Передан пакет " << pkg.size() << "байт" << std::endl;
+//	std::cout << "Передан пакет " << pkg.size() << "байт" << std::endl;
 }
 
 void MainWindow::chooseFile() {
@@ -92,9 +92,9 @@ void MainWindow::chooseFile() {
 		file.read(mappedFile.data(), mappedFile.size());
 		file.close();
 
-		std::cout << "Файл смапирован" << std::endl;;
+//		std::cout << "Файл смапирован" << std::endl;;
 	} else {
-		std::cout << "Не удалось открыть файл" << std::endl;
+//		std::cout << "Не удалось открыть файл" << std::endl;
 	}
 	
 	
@@ -105,17 +105,17 @@ void MainWindow::chooseFile() {
 
 void MainWindow::hostSet() {
 	host = ui->lineEdit_host->text().toStdString();
-	std::cout << "Хост задан: \"" << host << "\"" << std::endl;
+//	std::cout << "Хост задан: \"" << host << "\"" << std::endl;
 }
 
 void MainWindow::portSet() {
 	port = ui->lineEdit_port->text().toUInt();
-	std::cout << "порт задан: \"" << port << "\"" << std::endl;
+//	std::cout << "порт задан: \"" << port << "\"" << std::endl;
 }
 
 void MainWindow::wordSet() {
 	word = ui->lineEdit_word->text().toStdString();
-	std::cout << "Задаётся слово: \"" << word << "\"" << std::endl;
+//	std::cout << "Задаётся слово: \"" << word << "\"" << std::endl;
 	mpd[MsgPack::pack::str("word")] = MsgPack::pack::str(word);
 	
 	checkSendAbility();
@@ -175,8 +175,8 @@ void MainWindow::readAnswer() {
 		result(MsgPack::unpack::integer<uint32_t>(pkgResult));
 		pkgResult.clear();
 	} else {
-		std::cout << "Принятый пакет не корректен. Размер пакета: " 
-			<< pkgResult.size() << "байт. Ждём продолжения" << std::endl;
+//		std::cout << "Принятый пакет не корректен. Размер пакета: " 
+//			<< pkgResult.size() << "байт. Ждём продолжения" << std::endl;
 		readAnswer();
 	}
 }
