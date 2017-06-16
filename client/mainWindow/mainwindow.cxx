@@ -50,7 +50,7 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::res(uint32_t res) {
-	ui->label_res->setText(tr(boost::lexical_cast<std::string>(res).c_str()));
+	ui->label_resOut->setText(tr(boost::lexical_cast<std::string>(res).c_str()));
 	ui->pushButton_send->setEnabled(true);
 }
 
@@ -65,7 +65,7 @@ void MainWindow::connection() {
 
 void MainWindow::send() {
 	ui->pushButton_send->setEnabled(false);
-	ui->label_res->clear();
+	ui->label_resOut->clear();
 	auto pkg = MsgPack::pack::map(mpd);
 	
 	tcpSocket->write(reinterpret_cast<char*>(pkg.data()), pkg.size());
@@ -134,6 +134,8 @@ void MainWindow::displayError(QAbstractSocket::SocketError socketError) {
 	
 	switch (socketError) {
 		case QAbstractSocket::RemoteHostClosedError:
+			QMessageBox::information(this, tr("Клиент"),
+				tr("Подключение разорвано другой стороной"));
 			break;
 		case QAbstractSocket::HostNotFoundError:
 			QMessageBox::information(this, tr("Клиент"),

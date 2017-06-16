@@ -166,7 +166,7 @@
     <widget class="QLabel" name="label_resOut">
      <property name="geometry">
       <rect>
-       <x>80</x>
+       <x>90</x>
        <y>140</y>
        <width>121</width>
        <height>21</height>
