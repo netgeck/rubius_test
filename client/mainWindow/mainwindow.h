@@ -26,6 +26,7 @@ private:
 	std::string word;
 	QTcpSocket *tcpSocket;
 	MsgPack::map_description mpd;
+	MsgPack::package pkgRes;
 	
 	void checkSendAbility();
 	

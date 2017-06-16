@@ -154,7 +154,6 @@ void MainWindow::displayError(QAbstractSocket::SocketError socketError) {
 	ui->groupBox_net->setEnabled(true);
 }
 
-MsgPack::package pkgRes;
 void MainWindow::readAnswer() {
 	uint32_t result;
 	std::vector<char> d(1024);
@@ -164,8 +163,9 @@ void MainWindow::readAnswer() {
 	
 	if (MsgPack::isPgkCorrect(pkgRes)) {
 		res(MsgPack::unpack::integer<uint32_t>(pkgRes));
+		pkgRes.clear();
 	} else {
-		std::cout << "Пакет не корректен. Размер пакета: " 
+		std::cout << "Принятый пакет не корректен. Размер пакета: " 
 			<< pkgRes.size() << "байт. Ждём продолжения" << std::endl;
 	}
 }

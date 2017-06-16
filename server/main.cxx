@@ -43,21 +43,32 @@ void signalHandler(int signum) {
 	exit(signum);
 }
 
-bool isValid (char c) {
+/**
+ * @brief Проверка символа на допустимость использования в слове
+ * @param c	символ
+ * @return true - корректный символ; false - нет.
+ */
+bool isWordChar (char c) {
 	static std::locale loc;
 	return std::isalpha(c, loc) || std::isdigit(c, loc);
 }
 
+/**
+ * @brief Функция нарезки строки на отдельные слова.
+ * Словом считается последовательность букв и/или цифр.
+ * Результат записывается в ассоциативный контейнер <слово, частота>.
+ * @param words	ссылка на контейнер слов для записи результата
+ * @param begin итератор начала строки
+ * @param end итератор конца строки
+ */
 void cutter(std::map<std::string, size_t> &words, std::string::iterator begin, std::string::iterator end) {
-	auto it_correct = std::find_if(begin, end, isValid);
+	auto it_correct = std::find_if(begin, end, isWordChar);
 	if (it_correct == end) {
 		return;
 	}
 	
-	auto it_incorrect = std::find_if_not(it_correct, end, isValid);
+	auto it_incorrect = std::find_if_not(it_correct, end, isWordChar);
 	words[std::string(it_correct, it_incorrect)]++; // добавляем слово и увеличиваем счётчик
-//	std::string lastAdded(it_correct, it_incorrect);
-//	std::cout << "Добавлено слово \"" << lastAdded << "\"  счетчик: " << words.at(lastAdded) << std::endl;
 	
 	if (it_incorrect == end) {
 		return;
@@ -68,8 +79,10 @@ void cutter(std::map<std::string, size_t> &words, std::string::iterator begin, s
 
 class clientSession {
 public:
-	void start(socket_ptr pSock){
-		m_pSock = pSock;
+	clientSession(socket_ptr pSock) : m_pSock(pSock) {
+	}
+	
+	void start(){
 		m_pSock->async_read_some(basio::buffer(m_buffer), 
 			[this](const boost::system::error_code& error, std::size_t bytes_transferred) {
 				if (error) return;
@@ -94,7 +107,7 @@ public:
 
 					res = words.count(word) ? words[word] : 0;
 				} else {
-					std::cout << "Пакет не корректен. Размер пакета: " 
+					std::cout << "Принятый пакет не корректен. Размер пакета: " 
 						<< m_recvPkg.size() << "байт. Ждём продолжения" << std::endl;
 				}
 
@@ -104,6 +117,8 @@ public:
 					[this](const boost::system::error_code& error, std::size_t bytes_transferred) {
 						if (error) return;
 						std::cout << "Передан ответ" << std::endl;
+						m_recvPkg.clear();
+						start();
 					});
 			});
 	}
@@ -134,8 +149,8 @@ private:
 			[this](boost::system::error_code err) {
 				if (!err) {
 					syslog(LOG_INFO, "Принято соединение");
-					m_clSession.reset(new clientSession);
-					m_clSession->start(m_pSock);
+					m_clSession.reset(new clientSession(m_pSock));
+					m_clSession->start();
 				}
 
 				accept();
