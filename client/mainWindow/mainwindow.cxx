@@ -30,10 +30,12 @@ host("127.0.0.1") {
 	QObject::connect(ui->lineEdit_host, SIGNAL(editingFinished()), this, SLOT(hostSet()));
 	QObject::connect(ui->lineEdit_port, SIGNAL(editingFinished()), this, SLOT(portSet()));
 	QObject::connect(ui->pushButton_fChoose, SIGNAL(clicked()), this, SLOT(chooseFile()));
+	QObject::connect(ui->lineEdit_word, SIGNAL(textChanged(const QString &)), 
+		this, SLOT(checkEditWordForSend(const QString &)));
 	QObject::connect(ui->lineEdit_word, SIGNAL(editingFinished()), this, SLOT(wordSet()));
 	QObject::connect(ui->pushButton_connect, SIGNAL(clicked()), this, SLOT(connection()));
 	QObject::connect(tcpSocket, SIGNAL(error(QAbstractSocket::SocketError)),
-            this, SLOT(displayError(QAbstractSocket::SocketError)));
+		this, SLOT(displayError(QAbstractSocket::SocketError)));
 	QObject::connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readAnswer()));
 	ui->lineEdit_host->setText(host.c_str());
 	ui->lineEdit_port->setText(boost::lexical_cast<std::string>(port).c_str());
@@ -121,13 +123,16 @@ void MainWindow::wordSet() {
 
 void MainWindow::checkSendAbility() {
 	// Должны быть заданы и слово и файл
-	if (mpd.count(MsgPack::pack::str("word")) && mpd.count(MsgPack::pack::str("file"))){
+	if (!ui->lineEdit_word->text().isEmpty() && !ui->label_file->text().isEmpty()){
 		ui->pushButton_send->setEnabled(true);
 	} else {
 		ui->pushButton_send->setEnabled(false);
 	}
 }
 
+void MainWindow::checkEditWordForSend(const QString&) {
+	MainWindow::checkSendAbility();
+}
 
 void MainWindow::displayError(QAbstractSocket::SocketError socketError) {
 	ui->groupBox_work->setEnabled(false);

@@ -34,6 +34,7 @@ private:
 private slots:
 	void displayError(QAbstractSocket::SocketError socketError);
 	void readAnswer();
+	void checkEditWordForSend(const QString &);
 	
 public slots:
 	void send();
