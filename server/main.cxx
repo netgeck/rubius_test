@@ -27,8 +27,7 @@ using namespace std;
 namespace basio = boost::asio;
 using namespace boost::asio;
 typedef std::shared_ptr<ip::tcp::socket> socket_ptr;
-typedef std::shared_ptr<ip::tcp::acceptor> acceptor_ptr;
-socket_ptr gSock;
+//typedef std::shared_ptr<ip::tcp::acceptor> acceptor_ptr;
 
 void signalHandler(int signum) {
 	cout << "Interrupt signal (" << signum << ") received.\n";
@@ -41,19 +40,8 @@ void signalHandler(int signum) {
 		break;
 	}
 
-	// cleanup and close up stuff here  
-	// terminate program  
-
 	exit(signum);
 }
-
-void handler_write(const boost::system::error_code& error, std::size_t bytes_transferred){
-	if (error) return;
-	std::cout << "Передан фейковый ответ" << std::endl;
-}
-
-char data[512];
-MsgPack::package pkg;
 
 bool isValid (char c) {
 	static std::locale loc;
@@ -78,45 +66,52 @@ void cutter(std::map<std::string, size_t> &words, std::string::iterator begin, s
 	cutter(words, it_incorrect, end);
 }
 
-void read_handler(const boost::system::error_code& error, std::size_t bytes_transferred) {
-	if (error) return;
-	
-	uint32_t res(0);
-	pkg.insert(pkg.end(), data, data + bytes_transferred);
-	
-	if (MsgPack::isPgkCorrect(pkg)) {
-		std::cout << "Пакет получен" << std::endl;
-		MsgPack::map_description mpd = MsgPack::unpack::map(pkg);
-		auto wordPkg = mpd.at(MsgPack::pack::str("word"));
-		std::string word = MsgPack::unpack::str(wordPkg);
-		std::cout << "Получено слово: \"" << word << "\"" << std::endl;
-		
-		auto filePkg = mpd.at(MsgPack::pack::str("file"));
-		std::vector<char> mappedFile = MsgPack::unpack::bin(filePkg);
-		std::string file(mappedFile.begin(), mappedFile.end());
-		
-		std::map<std::string, size_t> words;
-		
-		cutter(words, file.begin(), file.end());
-		
-		res = words.count(word) ? words[word] : 0;
-	} else {
-		std::cout << "Пакет не корректен. Размер пакета: " 
-			<< pkg.size() << "байт. Ждём продолжения" << std::endl;
-	}
-	
-	
-	MsgPack::package resPkg = MsgPack::pack::integer<uint32_t>(res);
-	gSock->async_write_some(buffer(resPkg.data(), resPkg.size()), handler_write);
-}
+class clientSession {
+public:
+	void start(socket_ptr pSock){
+		m_pSock = pSock;
+		m_pSock->async_read_some(basio::buffer(m_buffer), 
+			[this](const boost::system::error_code& error, std::size_t bytes_transferred) {
+				if (error) return;
 
-void handle_accept(socket_ptr sock, const boost::system::error_code & err) {
-	if (err) return;
-	syslog(LOG_INFO, "Принято соединение");
-	
-	gSock = sock;
-	sock->async_read_some(basio::buffer(data), read_handler);
-}
+				uint32_t res(0);
+				m_recvPkg.insert(m_recvPkg.end(), m_buffer, m_buffer + bytes_transferred);
+
+				if (MsgPack::isPgkCorrect(m_recvPkg)) {
+					std::cout << "Пакет получен" << std::endl;
+					MsgPack::map_description mpd = MsgPack::unpack::map(m_recvPkg);
+					auto wordPkg = mpd.at(MsgPack::pack::str("word"));
+					std::string word = MsgPack::unpack::str(wordPkg);
+					std::cout << "Получено слово: \"" << word << "\"" << std::endl;
+
+					auto filePkg = mpd.at(MsgPack::pack::str("file"));
+					std::vector<char> mappedFile = MsgPack::unpack::bin(filePkg);
+					std::string file(mappedFile.begin(), mappedFile.end());
+
+					std::map<std::string, size_t> words;
+
+					cutter(words, file.begin(), file.end());
+
+					res = words.count(word) ? words[word] : 0;
+				} else {
+					std::cout << "Пакет не корректен. Размер пакета: " 
+						<< m_recvPkg.size() << "байт. Ждём продолжения" << std::endl;
+				}
+
+
+				MsgPack::package resPkg = MsgPack::pack::integer<uint32_t>(res);
+				m_pSock->async_write_some(buffer(resPkg.data(), resPkg.size()), 
+					[this](const boost::system::error_code& error, std::size_t bytes_transferred) {
+						if (error) return;
+						std::cout << "Передан ответ" << std::endl;
+					});
+			});
+	}
+private:
+	socket_ptr m_pSock;
+	char m_buffer[512];
+	MsgPack::package m_recvPkg;
+};
 
 class server {
 public:
@@ -138,8 +133,9 @@ private:
 		m_acceptor.async_accept(*m_pSock,
 			[this](boost::system::error_code err) {
 				if (!err) {
-					//std::make_shared<chat_session>(std::move(socket_), room_)->start();
-					handle_accept(m_pSock, err);
+					syslog(LOG_INFO, "Принято соединение");
+					m_clSession.reset(new clientSession);
+					m_clSession->start(m_pSock);
 				}
 
 				accept();
@@ -148,6 +144,7 @@ private:
 
 	ip::tcp::acceptor m_acceptor;
 	socket_ptr m_pSock;
+	unique_ptr<clientSession> m_clSession;
 };
 
 /*
