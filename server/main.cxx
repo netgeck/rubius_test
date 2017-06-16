@@ -35,7 +35,7 @@ typedef std::map<std::string, size_t> word_count;
  * @param str строка UTF-8
  * @return wstring
  */
-std::wstring utf8_to_wstring (const std::string& str) {
+inline std::wstring utf8_to_wstring (const std::string& str) {
     std::wstring_convert<std::codecvt_utf8<wchar_t>> myconv;
     return myconv.from_bytes(str);
 }
@@ -45,7 +45,7 @@ std::wstring utf8_to_wstring (const std::string& str) {
  * @param str wstring
  * @return строка UTF-8
  */
-std::string wstring_to_utf8 (const std::wstring& str) {
+inline std::string wstring_to_utf8 (const std::wstring& str) {
     std::wstring_convert<std::codecvt_utf8<wchar_t>> myconv;
     return myconv.to_bytes(str);
 }
@@ -90,45 +90,52 @@ public:
 	clientSession(socket_ptr pSock) : m_pSock(pSock) {
 	}
 	
-	void start(){
+	void readPkg(){
 		m_pSock->async_read_some(basio::buffer(m_buffer), 
 			[this](const boost::system::error_code& err, std::size_t bytes_transferred) {
 				if (err) {
 					syslog(LOG_ERR, "start: %s", err.message().c_str());
 					return;
 				}
-				handlePkg_n_answer(bytes_transferred);
+				checkPkg(bytes_transferred);
 			});
 	}
+private:
+	socket_ptr m_pSock;
+	char m_buffer[512];
+	MsgPack::package m_recvPkg;
 	
-	void handlePkg_n_answer(std::size_t bytes_transferred){
+	void checkPkg(std::size_t bytes_transferred){
 		m_recvPkg.insert(m_recvPkg.end(), m_buffer, m_buffer + bytes_transferred);
 
 		if (MsgPack::isPgkCorrect(m_recvPkg)) {
-			uint32_t res(0);
-			std::cout << "Пакет получен" << std::endl;
-			MsgPack::map_description mpd = MsgPack::unpack::map(m_recvPkg);
-			auto wordPkg = mpd.at(MsgPack::pack::str("word"));
-			std::string word = MsgPack::unpack::str(wordPkg);
-			std::cout << "Получено слово: \"" << word << "\"" << std::endl;
-
-			auto filePkg = mpd.at(MsgPack::pack::str("file"));
-			std::vector<char> mappedFile = MsgPack::unpack::bin(filePkg);
-			
-			std::wstring_convert<std::codecvt_utf8<char16_t>, char16_t> ucs2conv;
-			std::wstring file = utf8_to_wstring(std::string(mappedFile.begin(), mappedFile.end()));
-			
-			word_count words;
-
-			cutter(words, file.begin(), file.end());
-
-			res = words.count(word) ? words[word] : 0;
-			
-			answer(res);
+			handlePkg_n_answer();
 		} else {
 			std::cout << "Принятый пакет не корректен. Размер пакета: " 
 				<< m_recvPkg.size() << "байт. Ждём продолжения" << std::endl;
+			readPkg();
 		}
+	}
+	
+	void handlePkg_n_answer(){
+		uint32_t res(0);
+		std::cout << "Пакет получен" << std::endl;
+		MsgPack::map_description mpd = MsgPack::unpack::map(m_recvPkg);
+		auto wordPkg = mpd.at(MsgPack::pack::str("word"));
+		std::string word = MsgPack::unpack::str(wordPkg);
+		std::cout << "Получено слово: \"" << word << "\"" << std::endl;
+
+		auto filePkg = mpd.at(MsgPack::pack::str("file"));
+		std::vector<char> mappedFile = MsgPack::unpack::bin(filePkg);
+
+		std::wstring_convert<std::codecvt_utf8<char16_t>, char16_t> ucs2conv;
+		std::wstring file = utf8_to_wstring(std::string(mappedFile.begin(), mappedFile.end()));
+
+		word_count words;
+		cutter(words, file.begin(), file.end());
+
+		res = words.count(word) ? words[word] : 0;
+		answer(res);
 	}
 	
 	void answer(uint32_t res) {
@@ -141,13 +148,9 @@ public:
 				}
 				syslog(LOG_INFO, "Передан ответ");
 				m_recvPkg.clear();
-				start();
+				readPkg();
 			});
 	}
-private:
-	socket_ptr m_pSock;
-	char m_buffer[512];
-	MsgPack::package m_recvPkg;
 };
 
 class server {
@@ -172,7 +175,7 @@ private:
 				if (!err) {
 					syslog(LOG_INFO, "Принято соединение");
 					m_sessions.emplace_back(new clientSession(m_pSock));
-					m_sessions.back()->start();
+					m_sessions.back()->readPkg();
 				} else {
 					syslog(LOG_ERR, "accept: %s", err.message().c_str());
 				}
