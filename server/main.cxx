@@ -13,6 +13,9 @@
 #include <string>
 #include <csignal>
 #include <algorithm>
+#include <cwctype>
+#include <locale>
+#include <codecvt>
 
 #include <defPort.h>
 #include <MsgPack_types.h>
@@ -25,15 +28,36 @@ using namespace std;
 namespace basio = boost::asio;
 using namespace boost::asio;
 typedef std::shared_ptr<ip::tcp::socket> socket_ptr;
+typedef std::map<std::string, size_t> word_count;
+
+/**
+ * @brief Конвертировать UTF-8 строку в wstring
+ * @param str строка UTF-8
+ * @return wstring
+ */
+std::wstring utf8_to_wstring (const std::string& str) {
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> myconv;
+    return myconv.from_bytes(str);
+}
+
+/**
+ * @brief Конвертировать wstring в UTF-8 строку
+ * @param str wstring
+ * @return строка UTF-8
+ */
+std::string wstring_to_utf8 (const std::wstring& str) {
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> myconv;
+    return myconv.to_bytes(str);
+}
 
 /**
  * @brief Проверка символа на допустимость использования в слове
- * @param c	символ
+ * @param c	"широкий" символ
  * @return true - корректный символ; false - нет.
  */
-bool isWordChar (char c) {
-	static std::locale loc;
-	return std::isalpha(c, loc) || std::isdigit(c, loc);
+bool isWordChar (wchar_t c) {
+	std::locale::global (std::locale ("ru_RU.UTF-8"));
+	return std::iswalpha(c) || std::iswdigit(c);
 }
 
 /**
@@ -44,14 +68,15 @@ bool isWordChar (char c) {
  * @param begin итератор начала строки
  * @param end итератор конца строки
  */
-void cutter(std::map<std::string, size_t> &words, std::string::iterator begin, std::string::iterator end) {
+void cutter(word_count& words, std::wstring::iterator begin, std::wstring::iterator end) {
 	auto it_correct = std::find_if(begin, end, isWordChar);
 	if (it_correct == end) {
 		return;
 	}
 	
 	auto it_incorrect = std::find_if_not(it_correct, end, isWordChar);
-	words[std::string(it_correct, it_incorrect)]++; // добавляем слово и увеличиваем счётчик
+	// добавляем слово и увеличиваем счётчик
+	words[wstring_to_utf8(std::wstring(it_correct, it_incorrect))]++; 
 	
 	if (it_incorrect == end) {
 		return;
@@ -89,9 +114,11 @@ public:
 
 			auto filePkg = mpd.at(MsgPack::pack::str("file"));
 			std::vector<char> mappedFile = MsgPack::unpack::bin(filePkg);
-			std::string file(mappedFile.begin(), mappedFile.end());
-
-			std::map<std::string, size_t> words;
+			
+			std::wstring_convert<std::codecvt_utf8<char16_t>, char16_t> ucs2conv;
+			std::wstring file = utf8_to_wstring(std::string(mappedFile.begin(), mappedFile.end()));
+			
+			word_count words;
 
 			cutter(words, file.begin(), file.end());
 
