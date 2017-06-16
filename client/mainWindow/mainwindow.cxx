@@ -31,7 +31,7 @@ host("127.0.0.1") {
 	QObject::connect(ui->lineEdit_port, SIGNAL(editingFinished()), this, SLOT(portSet()));
 	QObject::connect(ui->pushButton_fChoose, SIGNAL(clicked()), this, SLOT(chooseFile()));
 	QObject::connect(ui->lineEdit_word, SIGNAL(textChanged(const QString &)), 
-		this, SLOT(checkEditWordForSend(const QString &)));
+		this, SLOT(wordChange(const QString &)));
 	QObject::connect(ui->lineEdit_word, SIGNAL(editingFinished()), this, SLOT(wordSet()));
 	QObject::connect(ui->pushButton_connect, SIGNAL(clicked()), this, SLOT(connection()));
 	QObject::connect(tcpSocket, SIGNAL(error(QAbstractSocket::SocketError)),
@@ -51,17 +51,17 @@ MainWindow::~MainWindow() {
 	delete ui;
 }
 
-void MainWindow::res(uint32_t res) {
+void MainWindow::result(uint32_t res) {
 	ui->label_resOut->setText(tr(boost::lexical_cast<std::string>(res).c_str()));
 	ui->pushButton_send->setEnabled(true);
 }
 
 void MainWindow::connection() {
 	ui->groupBox_net->setEnabled(false);
-//	tcpSocket->connectToHost(hostLineEdit->text(),
-//                             portLineEdit->text().toInt());
+
 	tcpSocket->connectToHost(ui->lineEdit_host->text(),
                              ui->lineEdit_port->text().toUInt());
+	
 	ui->groupBox_work->setEnabled(true);
 }
 
@@ -130,7 +130,7 @@ void MainWindow::checkSendAbility() {
 	}
 }
 
-void MainWindow::checkEditWordForSend(const QString&) {
+void MainWindow::wordChange(const QString&) {
 	MainWindow::checkSendAbility();
 }
 
@@ -169,14 +169,14 @@ void MainWindow::readAnswer() {
 	size_t avail = tcpSocket->bytesAvailable();
 	int r = tcpSocket->read(readBuffer.data(), std::min(readBuffer.size(), avail));
 	
-	pkgRes.insert(pkgRes.end(), readBuffer.begin(), readBuffer.begin() + r);
+	pkgResult.insert(pkgResult.end(), readBuffer.begin(), readBuffer.begin() + r);
 	
-	if (MsgPack::isPgkCorrect(pkgRes)) {
-		res(MsgPack::unpack::integer<uint32_t>(pkgRes));
-		pkgRes.clear();
+	if (MsgPack::isPgkCorrect(pkgResult)) {
+		result(MsgPack::unpack::integer<uint32_t>(pkgResult));
+		pkgResult.clear();
 	} else {
 		std::cout << "Принятый пакет не корректен. Размер пакета: " 
-			<< pkgRes.size() << "байт. Ждём продолжения" << std::endl;
+			<< pkgResult.size() << "байт. Ждём продолжения" << std::endl;
 		readAnswer();
 	}
 }
