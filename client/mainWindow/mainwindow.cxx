@@ -157,11 +157,14 @@ void MainWindow::displayError(QAbstractSocket::SocketError socketError) {
 }
 
 void MainWindow::readAnswer() {
-	uint32_t result;
-	std::vector<char> d(1024);
-	int r = tcpSocket->read(d.data(), d.size());
+	if (readBuffer.size() == 0 ) {
+		readBuffer.resize(32);
+	}
 	
-	pkgRes.insert(pkgRes.end(), d.begin(), d.begin() + r);
+	size_t avail = tcpSocket->bytesAvailable();
+	int r = tcpSocket->read(readBuffer.data(), std::min(readBuffer.size(), avail));
+	
+	pkgRes.insert(pkgRes.end(), readBuffer.begin(), readBuffer.begin() + r);
 	
 	if (MsgPack::isPgkCorrect(pkgRes)) {
 		res(MsgPack::unpack::integer<uint32_t>(pkgRes));
@@ -169,5 +172,6 @@ void MainWindow::readAnswer() {
 	} else {
 		std::cout << "Принятый пакет не корректен. Размер пакета: " 
 			<< pkgRes.size() << "байт. Ждём продолжения" << std::endl;
+		readAnswer();
 	}
 }

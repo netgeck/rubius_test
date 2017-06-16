@@ -27,6 +27,7 @@ private:
 	QTcpSocket *tcpSocket;
 	MsgPack::map_description mpd;
 	MsgPack::package pkgRes;
+	std::vector<char> readBuffer;
 	
 	void checkSendAbility();
 	
