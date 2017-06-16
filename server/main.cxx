@@ -111,19 +111,19 @@ private:
 		if (MsgPack::isPgkCorrect(m_recvPkg)) {
 			handlePkg_n_answer();
 		} else {
-			std::cout << "Принятый пакет не корректен. Размер пакета: " 
-				<< m_recvPkg.size() << "байт. Ждём продолжения" << std::endl;
+//			std::cout << "Принятый пакет не корректен. Размер пакета: " 
+//				<< m_recvPkg.size() << "байт. Ждём продолжения" << std::endl;
 			readPkg();
 		}
 	}
 	
 	void handlePkg_n_answer(){
 		uint32_t res(0);
-		std::cout << "Пакет получен" << std::endl;
+//		std::cout << "Пакет получен" << std::endl;
 		MsgPack::map_description mpd = MsgPack::unpack::map(m_recvPkg);
 		auto wordPkg = mpd.at(MsgPack::pack::str("word"));
 		std::string word = MsgPack::unpack::str(wordPkg);
-		std::cout << "Получено слово: \"" << word << "\"" << std::endl;
+//		std::cout << "Получено слово: \"" << word << "\"" << std::endl;
 
 		auto filePkg = mpd.at(MsgPack::pack::str("file"));
 		std::vector<char> mappedFile = MsgPack::unpack::bin(filePkg);
