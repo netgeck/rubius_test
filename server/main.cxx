@@ -132,25 +132,25 @@ class server {
 public:
 	server(boost::asio::io_service& io_service,
 		const ip::tcp::endpoint& endpoint)
-	: m_acceptor(io_service) {
+	: m_acceptor(io_service),
+	m_ioService(io_service) {
 		m_acceptor.open(endpoint.protocol());
 		m_acceptor.set_option(ip::tcp::acceptor::reuse_address(true));
 		m_acceptor.bind(endpoint);
 		m_acceptor.listen();
-		
-		m_pSock = std::make_shared<ip::tcp::socket>(io_service);
 		
 		accept();
 	}
 
 private:
 	void accept() {
+		socket_ptr m_pSock = std::make_shared<ip::tcp::socket>(m_ioService);
 		m_acceptor.async_accept(*m_pSock,
-			[this](boost::system::error_code err) {
+			[this, m_pSock](boost::system::error_code err) {
 				if (!err) {
 					syslog(LOG_INFO, "Принято соединение");
-					m_clSession.reset(new clientSession(m_pSock));
-					m_clSession->start();
+					m_sessions.emplace_back(new clientSession(m_pSock));
+					m_sessions.back()->start();
 				}
 
 				accept();
@@ -158,8 +158,8 @@ private:
 	}
 
 	ip::tcp::acceptor m_acceptor;
-	socket_ptr m_pSock;
-	unique_ptr<clientSession> m_clSession;
+	boost::asio::io_service& m_ioService;
+	std::vector<unique_ptr<clientSession>> m_sessions;
 };
 
 /*
