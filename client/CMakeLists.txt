@@ -5,7 +5,6 @@ project(${target_name})
 
 find_package(Qt4 REQUIRED QtCore QtGui QtNetwork)
 include(${QT_USE_FILE})
-#add_definitions(${QT_DEFINITIONS})
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)

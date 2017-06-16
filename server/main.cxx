@@ -7,13 +7,11 @@
 
 #include <boost/asio.hpp>
 #include <boost/asio/ip/tcp.hpp>
-#include <thread>
 #include <memory>
 #include <iostream>
 #include <syslog.h>
 #include <string>
 #include <csignal>
-#include <functional>
 #include <algorithm>
 
 #include <defPort.h>
@@ -27,7 +25,6 @@ using namespace std;
 namespace basio = boost::asio;
 using namespace boost::asio;
 typedef std::shared_ptr<ip::tcp::socket> socket_ptr;
-//typedef std::shared_ptr<ip::tcp::acceptor> acceptor_ptr;
 
 void signalHandler(int signum) {
 	cout << "Interrupt signal (" << signum << ") received.\n";
@@ -86,40 +83,46 @@ public:
 		m_pSock->async_read_some(basio::buffer(m_buffer), 
 			[this](const boost::system::error_code& error, std::size_t bytes_transferred) {
 				if (error) return;
+				handlePkg_n_answer(bytes_transferred);
+			});
+	}
+	
+	void handlePkg_n_answer(std::size_t bytes_transferred){
+		m_recvPkg.insert(m_recvPkg.end(), m_buffer, m_buffer + bytes_transferred);
 
-				uint32_t res(0);
-				m_recvPkg.insert(m_recvPkg.end(), m_buffer, m_buffer + bytes_transferred);
+		if (MsgPack::isPgkCorrect(m_recvPkg)) {
+			uint32_t res(0);
+			std::cout << "Пакет получен" << std::endl;
+			MsgPack::map_description mpd = MsgPack::unpack::map(m_recvPkg);
+			auto wordPkg = mpd.at(MsgPack::pack::str("word"));
+			std::string word = MsgPack::unpack::str(wordPkg);
+			std::cout << "Получено слово: \"" << word << "\"" << std::endl;
 
-				if (MsgPack::isPgkCorrect(m_recvPkg)) {
-					std::cout << "Пакет получен" << std::endl;
-					MsgPack::map_description mpd = MsgPack::unpack::map(m_recvPkg);
-					auto wordPkg = mpd.at(MsgPack::pack::str("word"));
-					std::string word = MsgPack::unpack::str(wordPkg);
-					std::cout << "Получено слово: \"" << word << "\"" << std::endl;
+			auto filePkg = mpd.at(MsgPack::pack::str("file"));
+			std::vector<char> mappedFile = MsgPack::unpack::bin(filePkg);
+			std::string file(mappedFile.begin(), mappedFile.end());
 
-					auto filePkg = mpd.at(MsgPack::pack::str("file"));
-					std::vector<char> mappedFile = MsgPack::unpack::bin(filePkg);
-					std::string file(mappedFile.begin(), mappedFile.end());
+			std::map<std::string, size_t> words;
 
-					std::map<std::string, size_t> words;
+			cutter(words, file.begin(), file.end());
 
-					cutter(words, file.begin(), file.end());
-
-					res = words.count(word) ? words[word] : 0;
-				} else {
-					std::cout << "Принятый пакет не корректен. Размер пакета: " 
-						<< m_recvPkg.size() << "байт. Ждём продолжения" << std::endl;
-				}
-
-
-				MsgPack::package resPkg = MsgPack::pack::integer<uint32_t>(res);
-				m_pSock->async_write_some(buffer(resPkg.data(), resPkg.size()), 
-					[this](const boost::system::error_code& error, std::size_t bytes_transferred) {
-						if (error) return;
-						std::cout << "Передан ответ" << std::endl;
-						m_recvPkg.clear();
-						start();
-					});
+			res = words.count(word) ? words[word] : 0;
+			
+			answer(res);
+		} else {
+			std::cout << "Принятый пакет не корректен. Размер пакета: " 
+				<< m_recvPkg.size() << "байт. Ждём продолжения" << std::endl;
+		}
+	}
+	
+	void answer(uint32_t res) {
+		MsgPack::package resPkg = MsgPack::pack::integer<uint32_t>(res);
+		m_pSock->async_write_some(buffer(resPkg.data(), resPkg.size()), 
+			[this](const boost::system::error_code& error, std::size_t bytes_transferred) {
+				if (error) return;
+				std::cout << "Передан ответ" << std::endl;
+				m_recvPkg.clear();
+				start();
 			});
 	}
 private:
