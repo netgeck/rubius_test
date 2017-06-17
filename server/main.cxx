@@ -130,10 +130,12 @@ private:
 
 		auto filePkg = mpd.at(MsgPack::pack::str("file"));
 		std::vector<char> mappedFile = MsgPack::unpack::bin(filePkg);
-
+		
+		// Конвертируем полученный файл в wstring
 		std::wstring_convert<std::codecvt_utf8<char16_t>, char16_t> ucs2conv;
 		std::wstring file = utf8_to_wstring(std::string(mappedFile.begin(), mappedFile.end()));
-
+		
+		// Нарезаем отдельные слова
 		word_count words;
 		cutter(words, file.begin(), file.end());
 
