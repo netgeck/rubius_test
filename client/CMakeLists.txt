@@ -11,11 +11,11 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-add_subdirectory( mainWindow )
+add_executable(${target_name} main.cxx mainwindow.cxx)
 
-add_executable( ${target_name} main.cxx )
+target_link_libraries(${target_name} ${QT_LIBRARIES} MessagePack)
 
-target_link_libraries(${target_name} ${QT_LIBRARIES} mainWindow)
+target_include_directories(${target_name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 install(TARGETS ${target_name} 
 	DESTINATION ${INSTALL_DIR}
