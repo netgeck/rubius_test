@@ -1,5 +1,5 @@
-#include "mainwindow.h"
-#include <ui_mainwindow.h>
+#include "MainWindow.h"
+#include <ui_MainWindow.h>
 #include <QObject>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -88,7 +88,6 @@ void MainWindow::chooseFile() {
 		tr("Open text"), QDir::homePath(), tr("Text Files(*.txt)"));
 	ui->label_file->setText(fileName);
 	
-	// TODO: маппировать файл
 	std::vector<char> mappedFile;
 	
 	// Маппинг файла

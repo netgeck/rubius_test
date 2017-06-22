@@ -9,7 +9,7 @@
 #include <QtCore/QTextCodec>
 #include <QTextCodec>
 
-#include "mainwindow.h"
+#include "MainWindow.h"
 
 
 #define  ENCODING_UTF8	"UTF-8"

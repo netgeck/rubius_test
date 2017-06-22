@@ -11,7 +11,7 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-add_executable(${target_name} main.cxx mainwindow.cxx)
+add_executable(${target_name} main.cxx MainWindow.cxx)
 
 target_link_libraries(${target_name} ${QT_LIBRARIES} MessagePack)
 
