@@ -7,6 +7,9 @@
 #include <string>
 #include <stdint.h>
 #include <fstream>
+#ifndef NDEBUG
+#include <iostream>
+#endif
 
 #include <defPort.h>
 #include <MsgPack_pack.h>
@@ -80,7 +83,6 @@ void MainWindow::send() {
 	auto pkg = MsgPack::pack::map(m_mpd);
 	
 	m_pTcpSocket->write(reinterpret_cast<char*>(pkg.data()), pkg.size());
-//	std::cout << "Передан пакет " << pkg.size() << "байт" << std::endl;
 }
 
 void MainWindow::chooseFile() {
@@ -115,17 +117,14 @@ void MainWindow::chooseFile() {
 
 void MainWindow::setHost() {
 	m_host = m_pUI->lineEdit_host->text().toStdString();
-//	std::cout << "Хост задан: \"" << host << "\"" << std::endl;
 }
 
 void MainWindow::setPort() {
 	m_port = m_pUI->lineEdit_port->text().toUInt();
-//	std::cout << "порт задан: \"" << port << "\"" << std::endl;
 }
 
 void MainWindow::setWord() {
 	m_word = m_pUI->lineEdit_word->text().toStdString();
-//	std::cout << "Задаётся слово: \"" << word << "\"" << std::endl;
 	m_mpd[MsgPack::pack::str("word")] = MsgPack::pack::str(m_word);
 	
 	checkSendAbility();
@@ -193,8 +192,10 @@ void MainWindow::readAnswer() {
 		result(MsgPack::unpack::integer<uint32_t>(m_pkgResult));
 		m_pkgResult.clear();
 	} else {
-//		std::cout << "Принятый пакет не корректен. Размер пакета: " 
-//			<< pkgResult.size() << "байт. Ждём продолжения" << std::endl;
+#ifndef NDEBUG
+		std::cout << "Принятый пакет не корректен. Размер пакета: " 
+			<< m_pkgResult.size() << "байт. Ждём продолжения" << std::endl;
+#endif
 		readAnswer();
 	}
 }
