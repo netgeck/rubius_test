@@ -34,9 +34,9 @@ typedef std::map<std::string, size_t> word_count;
  * @param str строка UTF-8
  * @return wstring
  */
-inline std::wstring utf8_to_wstring (const std::string& str) {
-    std::wstring_convert<std::codecvt_utf8<wchar_t>> myconv;
-    return myconv.from_bytes(str);
+inline std::wstring utf8_to_wstring(const std::string& str) {
+	std::wstring_convert<std::codecvt_utf8<wchar_t>> myconv;
+	return myconv.from_bytes(str);
 }
 
 /**
@@ -44,9 +44,9 @@ inline std::wstring utf8_to_wstring (const std::string& str) {
  * @param str wstring
  * @return строка UTF-8
  */
-inline std::string wstring_to_utf8 (const std::wstring& str) {
-    std::wstring_convert<std::codecvt_utf8<wchar_t>> myconv;
-    return myconv.to_bytes(str);
+inline std::string wstring_to_utf8(const std::wstring& str) {
+	std::wstring_convert<std::codecvt_utf8<wchar_t>> myconv;
+	return myconv.to_bytes(str);
 }
 
 /**
@@ -54,8 +54,8 @@ inline std::string wstring_to_utf8 (const std::wstring& str) {
  * @param c	"широкий" символ
  * @return true - корректный символ; false - нет.
  */
-bool isWordChar (wchar_t c) {
-	std::locale::global (std::locale ("ru_RU.UTF-8"));
+bool isWordChar(wchar_t c) {
+	std::locale::global(std::locale("ru_RU.UTF-8"));
 	return std::iswalpha(c) || std::iswdigit(c);
 }
 
@@ -75,7 +75,7 @@ void cutter(word_count& words, std::wstring::iterator begin, std::wstring::itera
 	
 	auto it_incorrect = std::find_if_not(it_correct, end, isWordChar);
 	// добавляем слово и увеличиваем счётчик
-	words[wstring_to_utf8(std::wstring(it_correct, it_incorrect))]++; 
+	words[wstring_to_utf8(std::wstring(it_correct, it_incorrect))]++;
 	
 	if (it_incorrect == end) {
 		return;
@@ -93,8 +93,8 @@ public:
 	clientSession(socket_ptr pSock) : m_pSock(pSock) {
 	}
 	
-	void readPkg(){
-		m_pSock->async_read_some(boost::asio::buffer(m_buffer), 
+	void readPkg() {
+		m_pSock->async_read_some(boost::asio::buffer(m_buffer),
 			[this](const boost::system::error_code& err, std::size_t bytes_transferred) {
 				if (err) {
 					syslog(LOG_ERR, "start: %s", err.message().c_str());
@@ -108,7 +108,7 @@ private:
 	char m_buffer[512];
 	MsgPack::package m_recvPkg;
 	
-	void checkPkg(std::size_t bytes_transferred){
+	void checkPkg(std::size_t bytes_transferred) {
 		m_recvPkg.insert(m_recvPkg.end(), m_buffer, m_buffer + bytes_transferred);
 
 		if (MsgPack::isPgkCorrect(m_recvPkg)) {
@@ -120,7 +120,7 @@ private:
 		}
 	}
 	
-	void handlePkg(){
+	void handlePkg() {
 		uint32_t res(0);
 //		std::cout << "Пакет получен" << std::endl;
 		MsgPack::map_description mpd = MsgPack::unpack::map(m_recvPkg);
@@ -145,7 +145,7 @@ private:
 	
 	void answer(uint32_t res) {
 		MsgPack::package resPkg = MsgPack::pack::integer<uint32_t>(res);
-		m_pSock->async_write_some(buffer(resPkg.data(), resPkg.size()), 
+		m_pSock->async_write_some(buffer(resPkg.data(), resPkg.size()),
 			[this](const boost::system::error_code& err, std::size_t bytes_transferred) {
 				if (err) {
 					syslog(LOG_ERR, "answer: %s", err.message().c_str());
@@ -219,7 +219,7 @@ int main(int argc, char** argv) {
 	
 	try {
 		boost::asio::io_service io_service;
-		ip::tcp::endpoint ep(ip::tcp::v4(), port); 
+		ip::tcp::endpoint ep(ip::tcp::v4(), port);
 		server serv(io_service, ep);
 		io_service.run();
 	} catch (boost::system::system_error e) {
@@ -231,7 +231,7 @@ int main(int argc, char** argv) {
 	} catch (...) {
 		std::cerr << "Не обработанный тип исключения" << std::endl;
 	}
-		
+	
 	return 0;
 }
 

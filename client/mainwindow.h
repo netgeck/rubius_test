@@ -43,7 +43,7 @@ private:
 	
 private slots:
 	void displayError(QAbstractSocket::SocketError socketError); //!< ошибки соединения
-	void readAnswer();	//!< чтение ответа
+	void readAnswer(); //!< чтение ответа
 	void wordChange(const QString &); //!< Реагируем на изменение слова
 	void send(); //!< Отправка пакета
 	void chooseFile(); //!< выбор файла

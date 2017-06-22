@@ -30,7 +30,7 @@ host("127.0.0.1") {
 	QObject::connect(ui->lineEdit_host, SIGNAL(editingFinished()), this, SLOT(hostSet()));
 	QObject::connect(ui->lineEdit_port, SIGNAL(editingFinished()), this, SLOT(portSet()));
 	QObject::connect(ui->pushButton_fChoose, SIGNAL(clicked()), this, SLOT(chooseFile()));
-	QObject::connect(ui->lineEdit_word, SIGNAL(textChanged(const QString &)), 
+	QObject::connect(ui->lineEdit_word, SIGNAL(textChanged(const QString &)),
 		this, SLOT(wordChange(const QString &)));
 	QObject::connect(ui->lineEdit_word, SIGNAL(editingFinished()), this, SLOT(wordSet()));
 	QObject::connect(ui->pushButton_connect, SIGNAL(clicked()), this, SLOT(connection()));
@@ -40,7 +40,7 @@ host("127.0.0.1") {
 	ui->lineEdit_host->setText(host.c_str());
 	ui->lineEdit_port->setText(boost::lexical_cast<std::string>(port).c_str());
 	ui->lineEdit_host->setInputMask("000.000.000.000;_");
-	ui->lineEdit_port->setValidator( new QIntValidator( 0, UINT16_MAX ) );
+	ui->lineEdit_port->setValidator(new QIntValidator(0, UINT16_MAX));
 	// Только буквы кириллического и латинского алфавита и цифры
 	ui->lineEdit_word->setValidator(new QRegExpValidator(QRegExp(tr("^[а-яА-ЯёЁa-zA-Z0-9]+$")), this));
 	ui->groupBox_work->setEnabled(false);
@@ -60,7 +60,7 @@ void MainWindow::connection() {
 	ui->groupBox_net->setEnabled(false);
 
 	tcpSocket->connectToHost(ui->lineEdit_host->text(),
-                             ui->lineEdit_port->text().toUInt());
+		ui->lineEdit_port->text().toUInt());
 	
 	ui->groupBox_work->setEnabled(true);
 }
@@ -123,7 +123,7 @@ void MainWindow::wordSet() {
 
 void MainWindow::checkSendAbility() {
 	// Должны быть заданы и слово и файл
-	if (!ui->lineEdit_word->text().isEmpty() && !ui->label_file->text().isEmpty()){
+	if (!ui->lineEdit_word->text().isEmpty() && !ui->label_file->text().isEmpty()) {
 		ui->pushButton_send->setEnabled(true);
 	} else {
 		ui->pushButton_send->setEnabled(false);
@@ -162,7 +162,7 @@ void MainWindow::displayError(QAbstractSocket::SocketError socketError) {
 }
 
 void MainWindow::readAnswer() {
-	if (readBuffer.size() == 0 ) {
+	if (readBuffer.size() == 0) {
 		readBuffer.resize(32);
 	}
 	
