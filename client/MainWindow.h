@@ -41,15 +41,21 @@ private:
 	/// Делаем кнопку отправки активной/неактивной
 	void checkSendAbility();
 	
+	/**
+	 * @brief Диалог ошибки доступа к файлу
+	 * @param err	описание ошибки
+	 */
+	void displayFileError(const QString& err);
+	
 private slots:
-	void displayError(QAbstractSocket::SocketError socketError); //!< ошибки соединения
+	void displaySockError(QAbstractSocket::SocketError socketError); //!< ошибки соединения
 	void readAnswer(); //!< чтение ответа
 	void wordChange(const QString &); //!< Реагируем на изменение слова
 	void send(); //!< Отправка пакета
 	void chooseFile(); //!< выбор файла
-	void hostSet();
-	void portSet();
-	void wordSet();
+	void setHost(); //!< Задать хост
+	void setPort(); //!< Задать порт
+	void setWord(); //!< Задать слово
 	void connection(); //!< соединение с сервером
 };
 

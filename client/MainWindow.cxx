@@ -36,12 +36,12 @@ m_host(IP_LOCALHOST) {
 	m_pTcpSocket = new QTcpSocket(this);
 	
 	QObject::connect(m_pUI->pushButton_send, SIGNAL(clicked()), this, SLOT(send()));
-	QObject::connect(m_pUI->lineEdit_host, SIGNAL(editingFinished()), this, SLOT(hostSet()));
-	QObject::connect(m_pUI->lineEdit_port, SIGNAL(editingFinished()), this, SLOT(portSet()));
+	QObject::connect(m_pUI->lineEdit_host, SIGNAL(editingFinished()), this, SLOT(setHost()));
+	QObject::connect(m_pUI->lineEdit_port, SIGNAL(editingFinished()), this, SLOT(setPort()));
 	QObject::connect(m_pUI->pushButton_fChoose, SIGNAL(clicked()), this, SLOT(chooseFile()));
 	QObject::connect(m_pUI->lineEdit_word, SIGNAL(textChanged(const QString &)),
 		this, SLOT(wordChange(const QString &)));
-	QObject::connect(m_pUI->lineEdit_word, SIGNAL(editingFinished()), this, SLOT(wordSet()));
+	QObject::connect(m_pUI->lineEdit_word, SIGNAL(editingFinished()), this, SLOT(setWord()));
 	QObject::connect(m_pUI->pushButton_connect, SIGNAL(clicked()), this, SLOT(connection()));
 	QObject::connect(m_pTcpSocket, SIGNAL(error(QAbstractSocket::SocketError)),
 		this, SLOT(displayError(QAbstractSocket::SocketError)));
@@ -88,9 +88,8 @@ void MainWindow::chooseFile() {
 		tr("Open text"), QDir::homePath(), tr("Text Files(*.txt)"));
 	m_pUI->label_file->setText(fileName);
 	
-	std::vector<char> mappedFile;
-	
 	// Маппинг файла
+	std::vector<char> mappedFile;
 	std::streampos size;
 	std::ifstream file(fileName.toStdString(), std::ios::in | std::ios::binary | std::ios::ate);
 	if (file.is_open()) {
@@ -99,29 +98,32 @@ void MainWindow::chooseFile() {
 		file.seekg(0, std::ios::beg);
 		file.read(mappedFile.data(), mappedFile.size());
 		file.close();
-
-//		std::cout << "Файл смапирован" << std::endl;;
 	} else {
-//		std::cout << "Не удалось открыть файл" << std::endl;
+		displayFileError(strerror(errno));
+		
+		// удаляем смапированный файл из пакет (если он там есть)
+		auto it = m_mpd.find(MsgPack::pack::str("file"));
+		if (it != m_mpd.end())
+			m_mpd.erase(it);
+		return;
 	}
-	
 	
 	m_mpd[MsgPack::pack::str("file")] = MsgPack::pack::bin(mappedFile.data(), mappedFile.size());
 	
 	checkSendAbility();
 }
 
-void MainWindow::hostSet() {
+void MainWindow::setHost() {
 	m_host = m_pUI->lineEdit_host->text().toStdString();
 //	std::cout << "Хост задан: \"" << host << "\"" << std::endl;
 }
 
-void MainWindow::portSet() {
+void MainWindow::setPort() {
 	m_port = m_pUI->lineEdit_port->text().toUInt();
 //	std::cout << "порт задан: \"" << port << "\"" << std::endl;
 }
 
-void MainWindow::wordSet() {
+void MainWindow::setWord() {
 	m_word = m_pUI->lineEdit_word->text().toStdString();
 //	std::cout << "Задаётся слово: \"" << word << "\"" << std::endl;
 	m_mpd[MsgPack::pack::str("word")] = MsgPack::pack::str(m_word);
@@ -142,7 +144,7 @@ void MainWindow::wordChange(const QString&) {
 	MainWindow::checkSendAbility();
 }
 
-void MainWindow::displayError(QAbstractSocket::SocketError socketError) {
+void MainWindow::displaySockError(QAbstractSocket::SocketError socketError) {
 	m_pUI->groupBox_work->setEnabled(false);
 	
 	switch (socketError) {
@@ -167,6 +169,14 @@ void MainWindow::displayError(QAbstractSocket::SocketError socketError) {
 	}
 
 	m_pUI->groupBox_net->setEnabled(true);
+}
+
+void MainWindow::displayFileError(const QString& err) {
+	m_pUI->label_file->clear();
+	checkSendAbility();
+	
+	QMessageBox::information(this, tr("Клиент"),
+		tr("Не удалось открыть файл: %1.").arg(err));
 }
 
 void MainWindow::readAnswer() {
