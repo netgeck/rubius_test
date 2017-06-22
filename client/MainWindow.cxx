@@ -1,13 +1,11 @@
-#include "MainWindow.h"
-#include <ui_MainWindow.h>
 #include <QObject>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <ui_MainWindow.h>
 
 #include <boost/lexical_cast.hpp>
 #include <string>
 #include <stdint.h>
-//#include <iostream>
 #include <fstream>
 
 #include <defPort.h>
@@ -15,6 +13,8 @@
 #include <common.h>
 #include <MsgPack_unpack.h>
 #include <MsgPack_types.h>
+
+#include "MainWindow.h"
 
 
 #define PORT_MIN	0
@@ -27,66 +27,66 @@
 
 MainWindow::MainWindow(QWidget *parent) :
 QMainWindow(parent),
-ui(new Ui::MainWindow),
-port(PORT_DEFAULT),
-host(IP_LOCALHOST) {
+m_pUI(new Ui::MainWindow),
+m_port(PORT_DEFAULT),
+m_host(IP_LOCALHOST) {
 	using namespace std::placeholders;
-	ui->setupUi(this);
+	m_pUI->setupUi(this);
 	
-	tcpSocket = new QTcpSocket(this);
+	m_pTcpSocket = new QTcpSocket(this);
 	
-	QObject::connect(ui->pushButton_send, SIGNAL(clicked()), this, SLOT(send()));
-	QObject::connect(ui->lineEdit_host, SIGNAL(editingFinished()), this, SLOT(hostSet()));
-	QObject::connect(ui->lineEdit_port, SIGNAL(editingFinished()), this, SLOT(portSet()));
-	QObject::connect(ui->pushButton_fChoose, SIGNAL(clicked()), this, SLOT(chooseFile()));
-	QObject::connect(ui->lineEdit_word, SIGNAL(textChanged(const QString &)),
+	QObject::connect(m_pUI->pushButton_send, SIGNAL(clicked()), this, SLOT(send()));
+	QObject::connect(m_pUI->lineEdit_host, SIGNAL(editingFinished()), this, SLOT(hostSet()));
+	QObject::connect(m_pUI->lineEdit_port, SIGNAL(editingFinished()), this, SLOT(portSet()));
+	QObject::connect(m_pUI->pushButton_fChoose, SIGNAL(clicked()), this, SLOT(chooseFile()));
+	QObject::connect(m_pUI->lineEdit_word, SIGNAL(textChanged(const QString &)),
 		this, SLOT(wordChange(const QString &)));
-	QObject::connect(ui->lineEdit_word, SIGNAL(editingFinished()), this, SLOT(wordSet()));
-	QObject::connect(ui->pushButton_connect, SIGNAL(clicked()), this, SLOT(connection()));
-	QObject::connect(tcpSocket, SIGNAL(error(QAbstractSocket::SocketError)),
+	QObject::connect(m_pUI->lineEdit_word, SIGNAL(editingFinished()), this, SLOT(wordSet()));
+	QObject::connect(m_pUI->pushButton_connect, SIGNAL(clicked()), this, SLOT(connection()));
+	QObject::connect(m_pTcpSocket, SIGNAL(error(QAbstractSocket::SocketError)),
 		this, SLOT(displayError(QAbstractSocket::SocketError)));
-	QObject::connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readAnswer()));
-	ui->lineEdit_host->setText(host.c_str());
-	ui->lineEdit_port->setText(boost::lexical_cast<std::string>(port).c_str());
-	ui->lineEdit_host->setInputMask(INPUTMASK_IP);
-	ui->lineEdit_port->setValidator(new QIntValidator(PORT_MIN, PORT_MAX));
+	QObject::connect(m_pTcpSocket, SIGNAL(readyRead()), this, SLOT(readAnswer()));
+	m_pUI->lineEdit_host->setText(m_host.c_str());
+	m_pUI->lineEdit_port->setText(boost::lexical_cast<std::string>(m_port).c_str());
+	m_pUI->lineEdit_host->setInputMask(INPUTMASK_IP);
+	m_pUI->lineEdit_port->setValidator(new QIntValidator(PORT_MIN, PORT_MAX));
 	// Только буквы кириллического и латинского алфавита и цифры
-	ui->lineEdit_word->setValidator(new QRegExpValidator(QRegExp(tr(REGEXP_RUS_ENG_NUM)), this));
-	ui->groupBox_work->setEnabled(false);
+	m_pUI->lineEdit_word->setValidator(new QRegExpValidator(QRegExp(tr(REGEXP_RUS_ENG_NUM)), this));
+	m_pUI->groupBox_work->setEnabled(false);
 	checkSendAbility();
 }
 
 MainWindow::~MainWindow() {
-	delete ui;
+	delete m_pUI;
 }
 
 void MainWindow::result(uint32_t res) {
-	ui->label_resOut->setText(tr(boost::lexical_cast<std::string>(res).c_str()));
-	ui->pushButton_send->setEnabled(true);
+	m_pUI->label_resOut->setText(tr(boost::lexical_cast<std::string>(res).c_str()));
+	m_pUI->pushButton_send->setEnabled(true);
 }
 
 void MainWindow::connection() {
-	ui->groupBox_net->setEnabled(false);
+	m_pUI->groupBox_net->setEnabled(false);
 
-	tcpSocket->connectToHost(ui->lineEdit_host->text(),
-		ui->lineEdit_port->text().toUInt());
+	m_pTcpSocket->connectToHost(m_pUI->lineEdit_host->text(),
+		m_pUI->lineEdit_port->text().toUInt());
 	
-	ui->groupBox_work->setEnabled(true);
+	m_pUI->groupBox_work->setEnabled(true);
 }
 
 void MainWindow::send() {
-	ui->pushButton_send->setEnabled(false);
-	ui->label_resOut->clear();
-	auto pkg = MsgPack::pack::map(mpd);
+	m_pUI->pushButton_send->setEnabled(false);
+	m_pUI->label_resOut->clear();
+	auto pkg = MsgPack::pack::map(m_mpd);
 	
-	tcpSocket->write(reinterpret_cast<char*>(pkg.data()), pkg.size());
+	m_pTcpSocket->write(reinterpret_cast<char*>(pkg.data()), pkg.size());
 //	std::cout << "Передан пакет " << pkg.size() << "байт" << std::endl;
 }
 
 void MainWindow::chooseFile() {
 	auto fileName = QFileDialog::getOpenFileName(this,
 		tr("Open text"), QDir::homePath(), tr("Text Files(*.txt)"));
-	ui->label_file->setText(fileName);
+	m_pUI->label_file->setText(fileName);
 	
 	std::vector<char> mappedFile;
 	
@@ -106,35 +106,35 @@ void MainWindow::chooseFile() {
 	}
 	
 	
-	mpd[MsgPack::pack::str("file")] = MsgPack::pack::bin(mappedFile.data(), mappedFile.size());
+	m_mpd[MsgPack::pack::str("file")] = MsgPack::pack::bin(mappedFile.data(), mappedFile.size());
 	
 	checkSendAbility();
 }
 
 void MainWindow::hostSet() {
-	host = ui->lineEdit_host->text().toStdString();
+	m_host = m_pUI->lineEdit_host->text().toStdString();
 //	std::cout << "Хост задан: \"" << host << "\"" << std::endl;
 }
 
 void MainWindow::portSet() {
-	port = ui->lineEdit_port->text().toUInt();
+	m_port = m_pUI->lineEdit_port->text().toUInt();
 //	std::cout << "порт задан: \"" << port << "\"" << std::endl;
 }
 
 void MainWindow::wordSet() {
-	word = ui->lineEdit_word->text().toStdString();
+	m_word = m_pUI->lineEdit_word->text().toStdString();
 //	std::cout << "Задаётся слово: \"" << word << "\"" << std::endl;
-	mpd[MsgPack::pack::str("word")] = MsgPack::pack::str(word);
+	m_mpd[MsgPack::pack::str("word")] = MsgPack::pack::str(m_word);
 	
 	checkSendAbility();
 }
 
 void MainWindow::checkSendAbility() {
 	// Должны быть заданы и слово и файл
-	if (!ui->lineEdit_word->text().isEmpty() && !ui->label_file->text().isEmpty()) {
-		ui->pushButton_send->setEnabled(true);
+	if (!m_pUI->lineEdit_word->text().isEmpty() && !m_pUI->label_file->text().isEmpty()) {
+		m_pUI->pushButton_send->setEnabled(true);
 	} else {
-		ui->pushButton_send->setEnabled(false);
+		m_pUI->pushButton_send->setEnabled(false);
 	}
 }
 
@@ -143,7 +143,7 @@ void MainWindow::wordChange(const QString&) {
 }
 
 void MainWindow::displayError(QAbstractSocket::SocketError socketError) {
-	ui->groupBox_work->setEnabled(false);
+	m_pUI->groupBox_work->setEnabled(false);
 	
 	switch (socketError) {
 		case QAbstractSocket::RemoteHostClosedError:
@@ -163,25 +163,25 @@ void MainWindow::displayError(QAbstractSocket::SocketError socketError) {
 			break;
 		default:
 			QMessageBox::information(this, tr("Клиент"),
-				tr("Получена ошибка: %1.").arg(tcpSocket->errorString()));
+				tr("Получена ошибка: %1.").arg(m_pTcpSocket->errorString()));
 	}
 
-	ui->groupBox_net->setEnabled(true);
+	m_pUI->groupBox_net->setEnabled(true);
 }
 
 void MainWindow::readAnswer() {
-	if (readBuffer.size() == 0) {
-		readBuffer.resize(READBUFFER_SIZE);
+	if (m_readBuffer.size() == 0) {
+		m_readBuffer.resize(READBUFFER_SIZE);
 	}
 	
-	size_t avail = tcpSocket->bytesAvailable();
-	int r = tcpSocket->read(readBuffer.data(), std::min(readBuffer.size(), avail));
+	size_t avail = m_pTcpSocket->bytesAvailable();
+	int r = m_pTcpSocket->read(m_readBuffer.data(), std::min(m_readBuffer.size(), avail));
 	
-	pkgResult.insert(pkgResult.end(), readBuffer.begin(), readBuffer.begin() + r);
+	m_pkgResult.insert(m_pkgResult.end(), m_readBuffer.begin(), m_readBuffer.begin() + r);
 	
-	if (MsgPack::isPgkCorrect(pkgResult)) {
-		result(MsgPack::unpack::integer<uint32_t>(pkgResult));
-		pkgResult.clear();
+	if (MsgPack::isPgkCorrect(m_pkgResult)) {
+		result(MsgPack::unpack::integer<uint32_t>(m_pkgResult));
+		m_pkgResult.clear();
 	} else {
 //		std::cout << "Принятый пакет не корректен. Размер пакета: " 
 //			<< pkgResult.size() << "байт. Ждём продолжения" << std::endl;

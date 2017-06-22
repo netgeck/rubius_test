@@ -23,14 +23,14 @@ public:
 	~MainWindow();
 
 private:
-	Ui::MainWindow *ui;
-	uint16_t port;			//!< порт сервера
-	std::string host;		//!< адрес сервера
-	std::string word;		//!< Слово для поиска вхождений в файле
-	QTcpSocket *tcpSocket;		//!< Сокет для взаимодействия с сервером
-	MsgPack::map_description mpd;	//!< Промежуточное представление отправляемого пакета
-	MsgPack::package pkgResult;	//!< Ответный пакет с результатом
-	std::vector<char> readBuffer;	//!< буффер
+	Ui::MainWindow *m_pUI;
+	uint16_t m_port;		//!< порт сервера
+	std::string m_host;		//!< адрес сервера
+	std::string m_word;		//!< Слово для поиска вхождений в файле
+	QTcpSocket *m_pTcpSocket;	//!< Сокет для взаимодействия с сервером
+	MsgPack::map_description m_mpd;	//!< Промежуточное представление отправляемого пакета
+	MsgPack::package m_pkgResult;	//!< Ответный пакет с результатом
+	std::vector<char> m_readBuffer;	//!< буффер
 	
 	/**
 	 * @brief Вывод результата (число вхождений слова в файл)
