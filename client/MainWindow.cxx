@@ -20,8 +20,6 @@
 #include "MainWindow.h"
 
 
-#define PORT_MIN	0
-#define PORT_MAX	UINT16_MAX
 #define INPUTMASK_IP	"000.000.000.000;_"
 #define IP_LOCALHOST	"127.0.0.1"
 #define REGEXP_RUS_ENG_NUM	"^[а-яА-ЯёЁa-zA-Z0-9]+$"
