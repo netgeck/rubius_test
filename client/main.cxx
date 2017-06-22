@@ -5,22 +5,27 @@
  * Created on 9 июня 2017 г., 21:19
  */
 
-#include "mainwindow.h"
 #include <QApplication>
 #include <QtCore/QTextCodec>
 #include <QTextCodec>
+
+#include "mainwindow.h"
+
+
+#define  ENCODING_UTF8	"UTF-8"
+
 
 /*
  * @brief точка входа в программу клиента
  */
 int main(int argc, char *argv[]) {
-	QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
-	QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
-	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
+	QTextCodec::setCodecForTr(QTextCodec::codecForName(ENCODING_UTF8));
+	QTextCodec::setCodecForLocale(QTextCodec::codecForName(ENCODING_UTF8));
+	QTextCodec::setCodecForCStrings(QTextCodec::codecForName(ENCODING_UTF8));
 	
-	QApplication a(argc, argv);
-	MainWindow w;
-	w.show();
+	QApplication app(argc, argv);
+	MainWindow win;
+	win.show();
 	
-	return a.exec();
+	return app.exec();
 }

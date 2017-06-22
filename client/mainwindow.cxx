@@ -16,11 +16,20 @@
 #include <MsgPack_unpack.h>
 #include <MsgPack_types.h>
 
+
+#define PORT_MIN	0
+#define PORT_MAX	UINT16_MAX
+#define INPUTMASK_IP	"000.000.000.000;_"
+#define IP_LOCALHOST	"127.0.0.1"
+#define REGEXP_RUS_ENG_NUM	"^[а-яА-ЯёЁa-zA-Z0-9]+$"
+#define READBUFFER_SIZE	32
+
+
 MainWindow::MainWindow(QWidget *parent) :
 QMainWindow(parent),
 ui(new Ui::MainWindow),
 port(PORT_DEFAULT),
-host("127.0.0.1") {
+host(IP_LOCALHOST) {
 	using namespace std::placeholders;
 	ui->setupUi(this);
 	
@@ -39,10 +48,10 @@ host("127.0.0.1") {
 	QObject::connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readAnswer()));
 	ui->lineEdit_host->setText(host.c_str());
 	ui->lineEdit_port->setText(boost::lexical_cast<std::string>(port).c_str());
-	ui->lineEdit_host->setInputMask("000.000.000.000;_");
-	ui->lineEdit_port->setValidator(new QIntValidator(0, UINT16_MAX));
+	ui->lineEdit_host->setInputMask(INPUTMASK_IP);
+	ui->lineEdit_port->setValidator(new QIntValidator(PORT_MIN, PORT_MAX));
 	// Только буквы кириллического и латинского алфавита и цифры
-	ui->lineEdit_word->setValidator(new QRegExpValidator(QRegExp(tr("^[а-яА-ЯёЁa-zA-Z0-9]+$")), this));
+	ui->lineEdit_word->setValidator(new QRegExpValidator(QRegExp(tr(REGEXP_RUS_ENG_NUM)), this));
 	ui->groupBox_work->setEnabled(false);
 	checkSendAbility();
 }
@@ -163,7 +172,7 @@ void MainWindow::displayError(QAbstractSocket::SocketError socketError) {
 
 void MainWindow::readAnswer() {
 	if (readBuffer.size() == 0) {
-		readBuffer.resize(32);
+		readBuffer.resize(READBUFFER_SIZE);
 	}
 	
 	size_t avail = tcpSocket->bytesAvailable();

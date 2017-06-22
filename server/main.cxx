@@ -23,7 +23,9 @@
 #include <MsgPack_pack.h>
 #include <MsgPack_unpack.h>
 
-using namespace std;
+
+#define READBUFFER_SIZE	512
+
 
 using namespace boost::asio;
 typedef std::shared_ptr<ip::tcp::socket> socket_ptr;
@@ -105,7 +107,7 @@ public:
 	}
 private:
 	socket_ptr m_pSock;
-	char m_buffer[512];
+	char m_buffer[READBUFFER_SIZE];
 	MsgPack::package m_recvPkg;
 	
 	void checkPkg(std::size_t bytes_transferred) {
@@ -143,8 +145,8 @@ private:
 		answer(res);
 	}
 	
-	void answer(uint32_t res) {
-		MsgPack::package resPkg = MsgPack::pack::integer<uint32_t>(res);
+	void answer(uint32_t result) {
+		MsgPack::package resPkg = MsgPack::pack::integer<uint32_t>(result);
 		m_pSock->async_write_some(buffer(resPkg.data(), resPkg.size()),
 			[this](const boost::system::error_code& err, std::size_t bytes_transferred) {
 				if (err) {
@@ -195,11 +197,11 @@ private:
 
 	ip::tcp::acceptor m_acceptor;
 	boost::asio::io_service& m_ioService;
-	std::vector<unique_ptr<clientSession>> m_sessions;
+	std::vector<std::unique_ptr<clientSession>> m_sessions;
 };
 
 /*
- * @brief точка входа в программу клиента
+ * @brief точка входа в программу сервер
  * Будет использоваться синхронное API, следовательно многопоточная архитектура.
  */
 int main(int argc, char** argv) {
