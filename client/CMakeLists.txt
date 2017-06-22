@@ -8,7 +8,6 @@ include(${QT_USE_FILE})
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTORCC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 add_executable(${target_name} main.cxx MainWindow.cxx)
