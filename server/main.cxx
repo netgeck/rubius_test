@@ -33,22 +33,24 @@ typedef std::map<std::string, size_t> word_count;
 
 /**
  * @brief Конвертировать UTF-8 строку в wstring
- * @param str строка UTF-8
+ * @param first указатель на первый символ строки UTF-8
+ * @param last указатель на последний символ строки UTF-8
  * @return wstring
  */
-inline std::wstring utf8_to_wstring(const std::string& str) {
+inline std::wstring utf8_to_wstring(const char* first, const char* last) {
 	std::wstring_convert<std::codecvt_utf8<wchar_t>> myconv;
-	return myconv.from_bytes(str);
+	return myconv.from_bytes(first, last);
 }
 
 /**
  * @brief Конвертировать wstring в UTF-8 строку
- * @param str wstring
+ * @param first указатель на первый символ строки wstring
+ * @param last указатель на последний символ строки wstring
  * @return строка UTF-8
  */
-inline std::string wstring_to_utf8(const std::wstring& str) {
+inline std::string wstring_to_utf8(const wchar_t* first, const wchar_t* last) {
 	std::wstring_convert<std::codecvt_utf8<wchar_t>> myconv;
-	return myconv.to_bytes(str);
+	return myconv.to_bytes(first, last);
 }
 
 /**
@@ -77,7 +79,13 @@ void cutter(word_count& words, std::wstring::iterator begin, std::wstring::itera
 	
 	auto it_incorrect = std::find_if_not(it_correct, end, isWordChar);
 	// добавляем слово и увеличиваем счётчик
-	words[wstring_to_utf8(std::wstring(it_correct, it_incorrect))]++;
+	words[wstring_to_utf8(&(*it_correct), &(*it_incorrect))]++;
+#ifndef NDEBUG
+	auto it_last = words.find(wstring_to_utf8(&(*it_correct), &(*it_incorrect)));
+	if (it_last != words.end()) {
+		std::cout << "добавлено \"" << it_last->first << "\": " << it_last->second << std::endl;
+	}
+#endif
 	
 	if (it_incorrect == end) {
 		return;
@@ -133,7 +141,7 @@ private:
 		
 		// Конвертируем полученный файл в wstring
 		std::wstring_convert<std::codecvt_utf8<char16_t>, char16_t> ucs2conv;
-		std::wstring file = utf8_to_wstring(std::string(mappedFile.begin(), mappedFile.end()));
+		std::wstring file = utf8_to_wstring(&mappedFile.front(), &mappedFile.back());
 		
 		// Нарезаем отдельные слова
 		word_count words;
