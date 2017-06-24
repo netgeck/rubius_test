@@ -5,6 +5,7 @@
 #include <QTcpSocket>
 #include <string>
 
+#include <streamPkg.h>
 
 namespace Ui {
 	class MainWindow;
@@ -28,7 +29,7 @@ private:
 	std::string m_word;		//!< Слово для поиска вхождений в файле
 	std::vector<char> m_mappedFile;	//!< смапированный файл
 	QTcpSocket *m_pTcpSocket;	//!< Сокет для взаимодействия с сервером
-	std::vector<char> m_readBuffer;	//!< буффер
+	msg::package m_answer;		//!< ответное сообщение
 	
 	/**
 	 * @brief Вывод результата (число вхождений слова в файл)

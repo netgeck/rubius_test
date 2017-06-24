@@ -168,21 +168,20 @@ void MainWindow::displayFileError(const QString& err) {
 }
 
 void MainWindow::readAnswer() {
-	if (m_readBuffer.size() == 0) {
-		m_readBuffer.resize(READBUFFER_SIZE);
-	}
+	std::vector<char> buffer(READBUFFER_SIZE);
 	
 	size_t avail = m_pTcpSocket->bytesAvailable();
-	int r = m_pTcpSocket->read(m_readBuffer.data(), std::min(m_readBuffer.size(), avail));
+	int byteRead = m_pTcpSocket->read(buffer.data(), std::min(buffer.size(), avail));
 	
-	std::vector<char> bufResult(m_readBuffer.begin(), m_readBuffer.begin() + r);
+	m_answer.pushBack(&(*buffer.begin()), byteRead);
 	
-	if (bufResult.size() == sizeof(uint32_t)) {
-		result(*reinterpret_cast<uint32_t*>(&bufResult[0]));
+	if (m_answer.isFull()) {
+		result(msg::answer::getNum(m_answer));
+		m_answer.clear();
 	} else {
 #ifndef NDEBUG
 		std::cout << "Принятый пакет не корректен. Размер пакета: " 
-			<< r << "байт. Ждём продолжения" << std::endl;
+			<< m_answer.size() << "байт. Ждём продолжения" << std::endl;
 #endif
 		readAnswer();
 	}

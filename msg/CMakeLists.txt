@@ -1,5 +1,5 @@
 
-set(target_name "packages")
+set(target_name "msg")
 
 add_library( ${target_name}
 	streamPkg.cxx

@@ -145,9 +145,10 @@ private:
 	}
 	
 	void answer(uint32_t result) {
-		std::vector<char> resPkg(sizeof(uint32_t));
-		memcpy(resPkg.data(), &result, sizeof(uint32_t));
-		m_pSock->async_write_some(buffer(resPkg.data(), resPkg.size()),
+		msg::package resPkg;
+		msg::answer::packageFill(resPkg, result);
+		
+		m_pSock->async_write_some(buffer(&(*resPkg.begin()), resPkg.size()),
 			[this](const boost::system::error_code& err, std::size_t bytes_transferred) {
 				if (err) {
 					syslog(LOG_ERR, "answer: %s", err.message().c_str());

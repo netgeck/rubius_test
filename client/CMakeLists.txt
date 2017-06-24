@@ -11,7 +11,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 add_executable(${target_name} main.cxx MainWindow.cxx)
 
-target_link_libraries(${target_name} ${QT_LIBRARIES} packages)
+target_link_libraries(${target_name} ${QT_LIBRARIES} msg)
 
 target_include_directories(${target_name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 

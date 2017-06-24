@@ -18,7 +18,8 @@
 #include "gtest_prod_util.h"
 
 
-FORWARD_DECLARE_TEST(package, fill_n_unpack);
+FORWARD_DECLARE_TEST(package, request_pack_unpack);
+FORWARD_DECLARE_TEST(package, answer_pack_unpack);
 
 
 namespace msg {
@@ -60,7 +61,8 @@ public:
 	std::vector<char>::const_iterator end() const { return m_buffer.end(); };
 	size_t size() const { return m_buffer.size(); };
 private:
-	FRIEND_TEST(::package, fill_n_unpack);
+	FRIEND_TEST(::package, request_pack_unpack);
+	FRIEND_TEST(::package, answer_pack_unpack);
 	
 	std::vector<char> m_buffer;
 };
@@ -69,7 +71,7 @@ namespace request {
 	
 typedef uint8_t wordSize;
 
-void packageFill(package& pkg,
+static void packageFill(package& pkg,
 	std::string::const_iterator word_begin, std::string::const_iterator word_end,
 	std::vector<char>::const_iterator file_begin, std::vector<char>::const_iterator file_end) {
 	
@@ -86,7 +88,7 @@ void packageFill(package& pkg,
 	pkg.pushBack(&(*file_begin), fileSize);
 }
 
-const char* word_begin(const package& pkg) {
+static const char* word_begin(const package& pkg) {
 	if (!pkg.isFull()) {
 		throw std::runtime_error("пакет не заполнен");
 	}
@@ -94,7 +96,7 @@ const char* word_begin(const package& pkg) {
 	return &(*(pkg.begin() + sizeof(package::header) + sizeof(request::wordSize)));
 }
 
-const char* word_end(const package& pkg) {
+static const char* word_end(const package& pkg) {
 	if (!pkg.isFull()) {
 		throw std::runtime_error("пакет не заполнен");
 	}
@@ -104,7 +106,7 @@ const char* word_end(const package& pkg) {
 	return word_begin(pkg) + wordSize;
 }
 
-const char* file_begin(const package& pkg) {
+static const char* file_begin(const package& pkg) {
 	if (!pkg.isFull()) {
 		throw std::runtime_error("пакет не заполнен");
 	}
@@ -112,7 +114,7 @@ const char* file_begin(const package& pkg) {
 	return word_end(pkg);
 }
 
-const char* file_end(const package& pkg) {
+static const char* file_end(const package& pkg) {
 	if (!pkg.isFull()) {
 		throw std::runtime_error("пакет не заполнен");
 	}
@@ -126,10 +128,28 @@ const char* file_end(const package& pkg) {
 
 } // namespace request
 
+
+/// работа с пакетом в ответном режиме
 namespace answer {
-	// TODO
-	// Тут будут функции для работы с пакетом в ответном режиме
+	
+typedef uint32_t value;
+	
+static void packageFill(package& pkg, value num) {
+	const package::header dataSize = sizeof(dataSize) + sizeof(num);
+	pkg.pushBack(reinterpret_cast<const char*>(&dataSize), sizeof(dataSize));
+	
+	pkg.pushBack(reinterpret_cast<char*>(&num), sizeof(num));
 }
+
+static value getNum(const package& pkg) {
+	if (!pkg.isFull()) {
+		throw std::runtime_error("пакет не заполнен");
+	}
+	
+	return *reinterpret_cast<const value*>(&(*(pkg.begin() + sizeof(package::header))));
+}
+
+} // namespace answer
 
 } // namespace package
 
