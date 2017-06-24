@@ -1,12 +1,10 @@
 
 set(target_name "msg")
 
-add_library( ${target_name}
-	streamPkg.cxx
-)
+add_library( ${target_name} INTERFACE )
 
 target_include_directories( ${target_name}
-PUBLIC
+INTERFACE
 	${CMAKE_CURRENT_SOURCE_DIR}
 )
 
