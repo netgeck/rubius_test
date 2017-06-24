@@ -75,8 +75,9 @@ void MainWindow::connection() {
 void MainWindow::send() {
 	m_pUI->pushButton_send->setEnabled(false);
 	m_pUI->label_resOut->clear();
-	streamPkg pkg;
-	streamPkgFill(pkg, m_word.begin(), m_word.end(), m_mappedFile.begin(), m_mappedFile.end());
+	msg::package pkg;
+	msg::request::packageFill(pkg, 
+		m_word.begin(), m_word.end(), m_mappedFile.begin(), m_mappedFile.end());
 	
 	m_pTcpSocket->write(&(*pkg.begin()), pkg.size());
 }

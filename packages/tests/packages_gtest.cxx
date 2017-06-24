@@ -12,7 +12,7 @@
 
 
 TEST(package, empty) {
-	streamPkg pkg;
+	msg::package pkg;
 	EXPECT_FALSE(pkg.isFull());
 }
 
@@ -21,13 +21,13 @@ TEST(package, fill_n_unpack) {
 	std::string fileContent("test test test");
 	std::vector<char> file(fileContent.begin(), fileContent.end());
 	
-	streamPkg pkg;
-	streamPkgFill(pkg, word.begin(), word.end(), file.begin(), file.end());
+	msg::package pkg;
+	msg::request::packageFill(pkg, word.begin(), word.end(), file.begin(), file.end());
 	
-	ASSERT_GT(pkg.size(), sizeof(streamPkg::header));
+	ASSERT_GT(pkg.size(), sizeof(msg::package::header));
 	ASSERT_TRUE(pkg.isFull()) 
 		<< "размер пакета: " << pkg.size()
-		<< " в заголовке пакета: " << *reinterpret_cast<streamPkg::header*>(&pkg.m_buffer[0]);
-	EXPECT_EQ(word, std::string(word_begin(pkg), word_end(pkg)));
-	EXPECT_EQ(file, std::vector<char>(file_begin(pkg), file_end(pkg)));
+		<< " в заголовке пакета: " << *reinterpret_cast<msg::package::header*>(&pkg.m_buffer[0]);
+	EXPECT_EQ(word, std::string(msg::request::word_begin(pkg), msg::request::word_end(pkg)));
+	EXPECT_EQ(file, std::vector<char>(msg::request::file_begin(pkg), msg::request::file_end(pkg)));
 }

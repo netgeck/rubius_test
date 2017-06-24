@@ -112,7 +112,7 @@ public:
 private:
 	socket_ptr m_pSock;
 	char m_buffer[READBUFFER_SIZE];
-	streamPkg m_recvPkg;
+	msg::package m_recvPkg;
 	
 	void checkPkg(std::size_t bytes_transferred) {
 		m_recvPkg.pushBack(m_buffer, bytes_transferred);
@@ -128,9 +128,9 @@ private:
 	
 	void handlePkg() {
 		uint32_t res(0);
-		std::string word(word_begin(m_recvPkg), word_end(m_recvPkg));
+		std::string word(msg::request::word_begin(m_recvPkg), msg::request::word_end(m_recvPkg));
 
-		std::vector<char> mappedFile(file_begin(m_recvPkg), file_end(m_recvPkg));
+		std::vector<char> mappedFile(msg::request::file_begin(m_recvPkg), msg::request::file_end(m_recvPkg));
 		
 		// Конвертируем полученный файл в wstring
 //		std::wstring_convert<std::codecvt_utf8<char16_t>, char16_t> ucs2conv;

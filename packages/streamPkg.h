@@ -15,11 +15,17 @@
 #include <stdexcept>
 #include <gtest/gtest_prod.h>
 
+#include "gtest_prod_util.h"
 
-class streamPkg {
+
+FORWARD_DECLARE_TEST(package, fill_n_unpack);
+
+
+namespace msg {
+	
+class package {
 public:
 	typedef uint32_t header;
-	typedef uint8_t wordSize;
 	
 	void pushBack(std::vector<char> chunk) {
 		m_buffer.insert(m_buffer.end(), chunk.begin(), chunk.end());
@@ -54,19 +60,23 @@ public:
 	std::vector<char>::const_iterator end() const { return m_buffer.end(); };
 	size_t size() const { return m_buffer.size(); };
 private:
-	FRIEND_TEST(package, fill_n_unpack);
+	FRIEND_TEST(::package, fill_n_unpack);
 	
 	std::vector<char> m_buffer;
 };
 
-void streamPkgFill(streamPkg& pkg,
+namespace request {
+	
+typedef uint8_t wordSize;
+
+void packageFill(package& pkg,
 	std::string::const_iterator word_begin, std::string::const_iterator word_end,
 	std::vector<char>::const_iterator file_begin, std::vector<char>::const_iterator file_end) {
 	
-	const streamPkg::wordSize wordSize = word_end - word_begin;
+	const request::wordSize wordSize = word_end - word_begin;
 	const auto fileSize = file_end - file_begin;
 	
-	const streamPkg::header dataSize = 
+	const package::header dataSize = 
 		sizeof(dataSize) + sizeof(wordSize) +	// заголовки
 		wordSize + fileSize;			// + данные
 	
@@ -76,25 +86,25 @@ void streamPkgFill(streamPkg& pkg,
 	pkg.pushBack(&(*file_begin), fileSize);
 }
 
-const char* word_begin(const streamPkg& pkg) {
+const char* word_begin(const package& pkg) {
 	if (!pkg.isFull()) {
 		throw std::runtime_error("пакет не заполнен");
 	}
 	
-	return &(*(pkg.begin() + sizeof(streamPkg::header) + sizeof(streamPkg::wordSize)));
+	return &(*(pkg.begin() + sizeof(package::header) + sizeof(request::wordSize)));
 }
 
-const char* word_end(const streamPkg& pkg) {
+const char* word_end(const package& pkg) {
 	if (!pkg.isFull()) {
 		throw std::runtime_error("пакет не заполнен");
 	}
 	
-	const streamPkg::wordSize wordSize = *(pkg.begin() + sizeof(streamPkg::header));
+	const request::wordSize wordSize = *(pkg.begin() + sizeof(package::header));
 	
 	return word_begin(pkg) + wordSize;
 }
 
-const char* file_begin(const streamPkg& pkg) {
+const char* file_begin(const package& pkg) {
 	if (!pkg.isFull()) {
 		throw std::runtime_error("пакет не заполнен");
 	}
@@ -102,17 +112,26 @@ const char* file_begin(const streamPkg& pkg) {
 	return word_end(pkg);
 }
 
-const char* file_end(const streamPkg& pkg) {
+const char* file_end(const package& pkg) {
 	if (!pkg.isFull()) {
 		throw std::runtime_error("пакет не заполнен");
 	}
 	
-	const streamPkg::header fileSize =			// общая длина пакета без заголовков
-		pkg.size() - sizeof(streamPkg::header) - sizeof(streamPkg::wordSize) 
+	const package::header fileSize =		// общая длина пакета без заголовков
+		pkg.size() - sizeof(package::header) - sizeof(request::wordSize) 
 		- (word_end(pkg) - word_begin(pkg));	// и без слова
 	
 	return file_begin(pkg) + fileSize;
 }
+
+} // namespace request
+
+namespace answer {
+	// TODO
+	// Тут будут функции для работы с пакетом в ответном режиме
+}
+
+} // namespace package
 
 #endif /* __STREAM_PKG__H__ */
 
