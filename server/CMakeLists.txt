@@ -6,7 +6,7 @@ add_executable( ${target_name}
 
 target_link_libraries( ${target_name} 
 	boost_system
-	MessagePack
+	packages
 )
 
 target_compile_definitions( ${target_name} PRIVATE PROGNAME="${target_name}" )

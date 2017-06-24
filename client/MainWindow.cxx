@@ -12,10 +12,7 @@
 #endif
 
 #include <defPort.h>
-#include <MsgPack_pack.h>
-#include <common.h>
-#include <MsgPack_unpack.h>
-#include <MsgPack_types.h>
+#include <streamPkg.h>
 
 #include "MainWindow.h"
 
@@ -78,9 +75,10 @@ void MainWindow::connection() {
 void MainWindow::send() {
 	m_pUI->pushButton_send->setEnabled(false);
 	m_pUI->label_resOut->clear();
-	auto pkg = MsgPack::pack::map(m_mpd);
+	streamPkg pkg;
+	streamPkgFill(pkg, m_word.begin(), m_word.end(), m_mappedFile.begin(), m_mappedFile.end());
 	
-	m_pTcpSocket->write(reinterpret_cast<char*>(pkg.data()), pkg.size());
+	m_pTcpSocket->write(&(*pkg.begin()), pkg.size());
 }
 
 void MainWindow::chooseFile() {
@@ -89,26 +87,19 @@ void MainWindow::chooseFile() {
 	m_pUI->label_file->setText(fileName);
 	
 	// Маппинг файла
-	std::vector<char> mappedFile;
 	std::streampos size;
 	std::ifstream file(fileName.toStdString(), std::ios::in | std::ios::binary | std::ios::ate);
 	if (file.is_open()) {
 		size = file.tellg();
-		mappedFile.resize(size);
+		m_mappedFile.resize(size);
 		file.seekg(0, std::ios::beg);
-		file.read(mappedFile.data(), mappedFile.size());
+		file.read(m_mappedFile.data(), m_mappedFile.size());
 		file.close();
 	} else {
 		displayFileError(strerror(errno));
-		
-		// удаляем смапированный файл из пакет (если он там есть)
-		auto it = m_mpd.find(MsgPack::pack::str("file"));
-		if (it != m_mpd.end())
-			m_mpd.erase(it);
+		m_mappedFile.clear(); // удаляем смапированный файл
 		return;
 	}
-	
-	m_mpd[MsgPack::pack::str("file")] = MsgPack::pack::bin(mappedFile.data(), mappedFile.size());
 	
 	checkSendAbility();
 }
@@ -123,7 +114,6 @@ void MainWindow::setPort() {
 
 void MainWindow::setWord() {
 	m_word = m_pUI->lineEdit_word->text().toStdString();
-	m_mpd[MsgPack::pack::str("word")] = MsgPack::pack::str(m_word);
 	
 	checkSendAbility();
 }
@@ -184,15 +174,14 @@ void MainWindow::readAnswer() {
 	size_t avail = m_pTcpSocket->bytesAvailable();
 	int r = m_pTcpSocket->read(m_readBuffer.data(), std::min(m_readBuffer.size(), avail));
 	
-	m_pkgResult.insert(m_pkgResult.end(), m_readBuffer.begin(), m_readBuffer.begin() + r);
+	std::vector<char> bufResult(m_readBuffer.begin(), m_readBuffer.begin() + r);
 	
-	if (MsgPack::isPgkCorrect(m_pkgResult)) {
-		result(MsgPack::unpack::integer<uint32_t>(m_pkgResult));
-		m_pkgResult.clear();
+	if (bufResult.size() == sizeof(uint32_t)) {
+		result(*reinterpret_cast<uint32_t*>(&bufResult[0]));
 	} else {
 #ifndef NDEBUG
 		std::cout << "Принятый пакет не корректен. Размер пакета: " 
-			<< m_pkgResult.size() << "байт. Ждём продолжения" << std::endl;
+			<< r << "байт. Ждём продолжения" << std::endl;
 #endif
 		readAnswer();
 	}

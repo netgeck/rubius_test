@@ -18,11 +18,7 @@
 #include <codecvt>
 
 #include <defPort.h>
-#include <MsgPack_types.h>
-#include <common.h>
-#include <MsgPack_pack.h>
-#include <MsgPack_unpack.h>
-
+#include <streamPkg.h>
 
 #define READBUFFER_SIZE	512
 
@@ -100,7 +96,7 @@ void cutter(word_count& words, std::wstring::iterator begin, std::wstring::itera
  */
 class clientSession {
 public:
-	clientSession(socket_ptr pSock) : m_pSock(pSock) {
+	clientSession(socket_ptr pSock) : m_pSock(pSock), m_recvPkg() {
 	}
 	
 	void readPkg() {
@@ -116,12 +112,12 @@ public:
 private:
 	socket_ptr m_pSock;
 	char m_buffer[READBUFFER_SIZE];
-	MsgPack::package m_recvPkg;
+	streamPkg m_recvPkg;
 	
 	void checkPkg(std::size_t bytes_transferred) {
-		m_recvPkg.insert(m_recvPkg.end(), m_buffer, m_buffer + bytes_transferred);
+		m_recvPkg.pushBack(m_buffer, bytes_transferred);
 
-		if (MsgPack::isPgkCorrect(m_recvPkg)) {
+		if (m_recvPkg.isFull()) {
 			handlePkg();
 		} else {
 			syslog(LOG_INFO, "Принятый пакет не корректен. "
@@ -132,15 +128,12 @@ private:
 	
 	void handlePkg() {
 		uint32_t res(0);
-		MsgPack::map_description mpd = MsgPack::unpack::map(m_recvPkg);
-		auto wordPkg = mpd.at(MsgPack::pack::str("word"));
-		std::string word = MsgPack::unpack::str(wordPkg);
+		std::string word(word_begin(m_recvPkg), word_end(m_recvPkg));
 
-		auto filePkg = mpd.at(MsgPack::pack::str("file"));
-		std::vector<char> mappedFile = MsgPack::unpack::bin(filePkg);
+		std::vector<char> mappedFile(file_begin(m_recvPkg), file_end(m_recvPkg));
 		
 		// Конвертируем полученный файл в wstring
-		std::wstring_convert<std::codecvt_utf8<char16_t>, char16_t> ucs2conv;
+//		std::wstring_convert<std::codecvt_utf8<char16_t>, char16_t> ucs2conv;
 		std::wstring file = utf8_to_wstring(&mappedFile.front(), &mappedFile.back());
 		
 		// Нарезаем отдельные слова
@@ -152,7 +145,8 @@ private:
 	}
 	
 	void answer(uint32_t result) {
-		MsgPack::package resPkg = MsgPack::pack::integer<uint32_t>(result);
+		std::vector<char> resPkg(sizeof(uint32_t));
+		memcpy(resPkg.data(), &result, sizeof(uint32_t));
 		m_pSock->async_write_some(buffer(resPkg.data(), resPkg.size()),
 			[this](const boost::system::error_code& err, std::size_t bytes_transferred) {
 				if (err) {

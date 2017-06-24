@@ -5,7 +5,6 @@
 #include <QTcpSocket>
 #include <string>
 
-#include <MsgPack_types.h>
 
 namespace Ui {
 	class MainWindow;
@@ -27,9 +26,8 @@ private:
 	uint16_t m_port;		//!< порт сервера
 	std::string m_host;		//!< адрес сервера
 	std::string m_word;		//!< Слово для поиска вхождений в файле
+	std::vector<char> m_mappedFile;	//!< смапированный файл
 	QTcpSocket *m_pTcpSocket;	//!< Сокет для взаимодействия с сервером
-	MsgPack::map_description m_mpd;	//!< Промежуточное представление отправляемого пакета
-	MsgPack::package m_pkgResult;	//!< Ответный пакет с результатом
 	std::vector<char> m_readBuffer;	//!< буффер
 	
 	/**
