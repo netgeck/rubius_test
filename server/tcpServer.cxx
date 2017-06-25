@@ -20,8 +20,6 @@ tcpServer::tcpServer(uint16_t port, QObject *parent) : QObject(parent) {
 
 	if (!m_server->listen(QHostAddress::Any, port)) {
 		qDebug() << "Не удалось запустить сервер";
-	} else {
-		qDebug() << "сервер запущен";
 	}
 }
 
