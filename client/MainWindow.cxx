@@ -3,7 +3,6 @@
 #include <QMessageBox>
 #include <ui_MainWindow.h>
 
-#include <boost/lexical_cast.hpp>
 #include <string>
 #include <stdint.h>
 #include <fstream>
@@ -26,7 +25,6 @@ MainWindow::MainWindow(QWidget *parent) :
 QMainWindow(parent),
 m_pUI(new Ui::MainWindow),
 m_port(PORT_DEFAULT) {
-	using namespace std::placeholders;
 	m_pUI->setupUi(this);
 	
 	m_pTcpSocket = new QTcpSocket(this);
@@ -42,7 +40,7 @@ m_port(PORT_DEFAULT) {
 		this, SLOT(displaySockError(QAbstractSocket::SocketError)));
 	QObject::connect(m_pTcpSocket, SIGNAL(readyRead()), this, SLOT(readAnswer()));
 	m_pUI->lineEdit_host->setText(IP_LOCALHOST);
-	m_pUI->lineEdit_port->setText(boost::lexical_cast<std::string>(m_port).c_str());
+	m_pUI->lineEdit_port->setText(QString::number(m_port));
 	m_pUI->lineEdit_port->setValidator(new QIntValidator(PORT_MIN, PORT_MAX));
 	// Только буквы кириллического и латинского алфавита и цифры
 	m_pUI->lineEdit_word->setValidator(new QRegExpValidator(QRegExp(tr(REGEXP_RUS_ENG_NUM)), this));
@@ -58,7 +56,7 @@ void MainWindow::result(msg::answer::value res) {
 	if (res == msg::answer::errCode) {
 		displayAnswerError("Сервер вернул ошибку.");
 	} else {
-		m_pUI->label_resOut->setText(tr(boost::lexical_cast<std::string>(res).c_str()));
+		m_pUI->label_resOut->setText(QString::number(res));
 	}
 	m_pUI->pushButton_send->setEnabled(true);
 }
