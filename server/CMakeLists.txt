@@ -1,11 +1,19 @@
 set(target_name server)
 
+find_package(Qt4 REQUIRED QtCore QtNetwork)
+include(${QT_USE_FILE})
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
 add_executable( ${target_name}
 	main.cxx
+	tcpServer.cxx
+	clientSession.cxx
 )
 
 target_link_libraries( ${target_name} 
-	boost_system
+	${QT_LIBRARIES}
 	msg
 )
 
