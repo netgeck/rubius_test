@@ -13,10 +13,6 @@
 #include "tcpServer.h"
 
 
-/**
- * @brief Класс сервер.
- * Принимает соединения. Запускает объект-сессию для каждого нового соединения.
- */
 tcpServer::tcpServer(uint16_t port, QObject *parent) : QObject(parent) {
 	m_server = new QTcpServer(this);
 

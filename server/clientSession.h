@@ -14,7 +14,7 @@
 #include <msg.h>
 
 
-#define READBUFFER_SIZE	512
+#define READBUFFER_SIZE	512	//!< размер буфера для чтения
 
 
 /**
@@ -25,18 +25,29 @@ class clientSession : public QObject {
 	Q_OBJECT
 	
 public:
+	/**
+	 * @biref Конструктор
+	 * @param socket	сокет
+	 * @param parent	родительский объект
+	 */
 	clientSession(QTcpSocket *socket, QObject *parent);
 	
 public slots:
+	/// Чтение пакета из сокета
 	void readPkg();
 	
 private:
+	/// Обработка полученного пакета
 	void handlePkg();
 	
+	/**
+	 * @brief Отправка ответного пакета клиенту
+	 * @param result результат
+	 */
 	void answer(uint32_t result);
 	
-	QTcpSocket* m_pSock;
-	msg::package m_recvPkg;
+	QTcpSocket* m_pSock;	//!< сокет для связи с клиентом
+	msg::package m_recvPkg;	//!< принимаемый пакет
 };
 
 

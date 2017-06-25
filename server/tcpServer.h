@@ -5,8 +5,8 @@
  * Created on 25 июня 2017 г., 17:54
  */
 
-#ifndef __SERVER__H__
-#define __SERVER__H__
+#ifndef __TCP_SERVER__H__
+#define __TCP_SERVER__H__
 
 #include <QObject>
 #include <QTcpSocket>
@@ -18,20 +18,28 @@
 
 class clientSession;
 
+/**
+ * @brief Класс сервер.
+ * Принимает соединения. Запускает объект-сессию для каждого нового соединения.
+ */
 class tcpServer : public QObject {
 	Q_OBJECT
 public:
+	/**
+	 * @brief Конструктор
+	 * @param port	номер порта
+	 * @param parent родительский объект
+	 */
 	explicit tcpServer(uint16_t port, QObject *parent = 0);
 
-signals:
-
 public slots:
+	/// Приём соединения
 	void accept();
 
 private:
-	QTcpServer *m_server;
-	std::vector<std::shared_ptr<clientSession>> m_sessions;
+	QTcpServer *m_server; //!< tcp-сервер
+	std::vector<std::shared_ptr<clientSession>> m_sessions; //!< список запущенных соединени
 };
 
-#endif /* __SERVER__H__ */
+#endif /* __TCP_SERVER__H__ */
 

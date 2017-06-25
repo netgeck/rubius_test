@@ -11,6 +11,7 @@
 
 #include "clientSession.h"
 
+
 clientSession::clientSession(QTcpSocket *socket, QObject *parent) : QObject(parent), 
 m_pSock(socket), 
 m_recvPkg() {
