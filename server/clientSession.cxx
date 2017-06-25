@@ -22,6 +22,10 @@ void clientSession::readPkg() {
 	std::vector<char> buffer(READBUFFER_SIZE);
 
 	size_t avail = m_pSock->bytesAvailable();
+	if (!avail) {
+		return;
+	}
+	
 	int byteRead = m_pSock->read(buffer.data(), std::min(buffer.size(), avail));
 
 	try {

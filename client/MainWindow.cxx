@@ -180,6 +180,10 @@ void MainWindow::readAnswer() {
 	std::vector<char> buffer(READBUFFER_SIZE);
 	
 	size_t avail = m_pTcpSocket->bytesAvailable();
+	if (!avail) {
+		return;
+	}
+	
 	int byteRead = m_pTcpSocket->read(buffer.data(), std::min(buffer.size(), avail));
 	
 	try {
