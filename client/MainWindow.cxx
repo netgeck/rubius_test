@@ -17,7 +17,6 @@
 #include "MainWindow.h"
 
 
-#define INPUTMASK_IP	"000.000.000.000;_"
 #define IP_LOCALHOST	"127.0.0.1"
 #define REGEXP_RUS_ENG_NUM	"^[а-яА-ЯёЁa-zA-Z0-9]+$"
 #define READBUFFER_SIZE	32
@@ -46,7 +45,6 @@ m_host(IP_LOCALHOST) {
 	QObject::connect(m_pTcpSocket, SIGNAL(readyRead()), this, SLOT(readAnswer()));
 	m_pUI->lineEdit_host->setText(m_host.c_str());
 	m_pUI->lineEdit_port->setText(boost::lexical_cast<std::string>(m_port).c_str());
-	m_pUI->lineEdit_host->setInputMask(INPUTMASK_IP);
 	m_pUI->lineEdit_port->setValidator(new QIntValidator(PORT_MIN, PORT_MAX));
 	// Только буквы кириллического и латинского алфавита и цифры
 	m_pUI->lineEdit_word->setValidator(new QRegExpValidator(QRegExp(tr(REGEXP_RUS_ENG_NUM)), this));
