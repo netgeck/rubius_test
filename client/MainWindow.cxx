@@ -87,8 +87,18 @@ void MainWindow::send() {
 }
 
 void MainWindow::chooseFile() {
-	auto fileName = QFileDialog::getOpenFileName(this,
-		tr("Open text"), QDir::homePath(), tr("Text Files(*.txt)"));
+	QFileDialog dialog(this, tr("Open text"), QDir::homePath());
+	dialog.setFileMode(QFileDialog::ExistingFile);
+	QStringList filters;
+	filters	<< "Text files (*.txt)"
+		<< "Any files (*)";
+	dialog.setNameFilters(filters);
+	if (!dialog.exec()) {
+		return;
+	}
+	
+	QString fileName = dialog.selectedFiles().front();
+
 	m_pUI->lineEdit_file->setText(fileName);
 	
 	// Маппинг файла
