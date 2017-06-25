@@ -5,7 +5,7 @@
 #include <QTcpSocket>
 #include <string>
 
-#include <streamPkg.h>
+#include <msg.h>
 
 namespace Ui {
 	class MainWindow;

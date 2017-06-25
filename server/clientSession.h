@@ -12,7 +12,7 @@
 #include <QTcpSocket>
 #include <syslog.h>
 
-#include <streamPkg.h>
+#include <msg.h>
 
 #include "stringUtils.h"
 

@@ -12,7 +12,7 @@
 #endif
 
 #include <defPort.h>
-#include <streamPkg.h>
+#include <msg.h>
 
 #include "MainWindow.h"
 

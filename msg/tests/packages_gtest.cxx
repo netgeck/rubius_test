@@ -8,7 +8,7 @@
 #include <gtest/gtest.h>
 
 #include <vector>
-#include <streamPkg.h>
+#include <msg.h>
 
 
 TEST(package, empty) {

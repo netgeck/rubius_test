@@ -7,7 +7,7 @@
 
 #include <syslog.h>
 
-#include <streamPkg.h>
+#include <msg.h>
 
 #include "clientSession.h"
 #include "tcpServer.h"
