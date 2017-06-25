@@ -6,197 +6,123 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>251</width>
-    <height>358</height>
+    <width>343</width>
+    <height>430</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Клиент</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QGroupBox" name="groupBox_net">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>251</width>
-      <height>121</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string>Сеть</string>
-    </property>
-    <widget class="QLabel" name="label_host">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>30</y>
-       <width>41</width>
-       <height>17</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Хост</string>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="lineEdit_host">
-     <property name="geometry">
-      <rect>
-       <x>60</x>
-       <y>30</y>
-       <width>141</width>
-       <height>25</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_port">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>60</y>
-       <width>41</width>
-       <height>17</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Порт</string>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="lineEdit_port">
-     <property name="geometry">
-      <rect>
-       <x>60</x>
-       <y>60</y>
-       <width>113</width>
-       <height>25</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="pushButton_connect">
-     <property name="geometry">
-      <rect>
-       <x>60</x>
-       <y>90</y>
-       <width>121</width>
-       <height>25</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Соденинение</string>
-     </property>
-    </widget>
-   </widget>
-   <widget class="QGroupBox" name="groupBox_work">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>140</y>
-      <width>251</width>
-      <height>171</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string>Ввод данных и отравка</string>
-    </property>
-    <widget class="QPushButton" name="pushButton_fChoose">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>20</y>
-       <width>111</width>
-       <height>25</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Выбор файла</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_file">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>50</y>
-       <width>241</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Файл не выбран            </string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_word">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>80</y>
-       <width>51</width>
-       <height>17</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Слово:</string>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="lineEdit_word">
-     <property name="geometry">
-      <rect>
-       <x>50</x>
-       <y>80</y>
-       <width>191</width>
-       <height>25</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="pushButton_send">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>110</y>
-       <width>88</width>
-       <height>25</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Отправить</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_resOut">
-     <property name="geometry">
-      <rect>
-       <x>90</x>
-       <y>140</y>
-       <width>121</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_res">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>140</y>
-       <width>81</width>
-       <height>17</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Результат:</string>
-     </property>
-    </widget>
-   </widget>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QGroupBox" name="groupBox_net">
+      <property name="title">
+       <string>Сеть</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_host">
+         <property name="text">
+          <string>Хост</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="lineEdit_host"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_port">
+         <property name="text">
+          <string>Порт</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLineEdit" name="lineEdit_port"/>
+       </item>
+       <item row="2" column="1">
+        <widget class="QPushButton" name="pushButton_connect">
+         <property name="text">
+          <string>Соденинение</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="groupBox_work">
+      <property name="title">
+       <string>Ввод данных и отравка</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="1" column="0">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Файл:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLineEdit" name="lineEdit_file">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_word">
+         <property name="text">
+          <string>Слово:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLineEdit" name="lineEdit_word"/>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_res">
+         <property name="text">
+          <string>Результат:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0" colspan="2">
+        <widget class="QPushButton" name="pushButton_fChoose">
+         <property name="text">
+          <string>Выбор файла</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0" colspan="2">
+        <widget class="QPushButton" name="pushButton_send">
+         <property name="text">
+          <string>Отправить</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QLabel" name="label_resOut">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>251</width>
+     <width>343</width>
      <height>22</height>
     </rect>
    </property>

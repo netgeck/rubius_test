@@ -89,7 +89,7 @@ void MainWindow::send() {
 void MainWindow::chooseFile() {
 	auto fileName = QFileDialog::getOpenFileName(this,
 		tr("Open text"), QDir::homePath(), tr("Text Files(*.txt)"));
-	m_pUI->label_file->setText(fileName);
+	m_pUI->lineEdit_file->setText(fileName);
 	
 	// Маппинг файла
 	std::streampos size;
@@ -125,7 +125,7 @@ void MainWindow::setWord() {
 
 void MainWindow::checkSendAbility() {
 	// Должны быть заданы и слово и файл
-	if (!m_pUI->lineEdit_word->text().isEmpty() && !m_pUI->label_file->text().isEmpty()) {
+	if (!m_pUI->lineEdit_word->text().isEmpty() && !m_pUI->lineEdit_file->text().isEmpty()) {
 		m_pUI->pushButton_send->setEnabled(true);
 	} else {
 		m_pUI->pushButton_send->setEnabled(false);
@@ -164,7 +164,7 @@ void MainWindow::displaySockError(QAbstractSocket::SocketError socketError) {
 }
 
 void MainWindow::displayFileError(const QString& err) {
-	m_pUI->label_file->clear();
+	m_pUI->lineEdit_file->clear();
 	checkSendAbility();
 	
 	QMessageBox::information(this, tr("Клиент"),
