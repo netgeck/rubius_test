@@ -1,6 +1,5 @@
 set(target_name server)
 
-find_package(Qt4 REQUIRED QtCore QtNetwork)
 include(${QT_USE_FILE})
 
 set(CMAKE_AUTOMOC ON)

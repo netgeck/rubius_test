@@ -3,6 +3,9 @@ project( rubius_test )
 
 set (CMAKE_CXX_STANDARD 14)
 
+# Qt
+find_package(Qt4 REQUIRED QtCore QtGui QtNetwork)
+
 # Unit-тесты
 enable_testing()
 find_package(GTest REQUIRED)
