@@ -42,7 +42,7 @@ m_host(IP_LOCALHOST) {
 	QObject::connect(m_pUI->lineEdit_word, SIGNAL(editingFinished()), this, SLOT(setWord()));
 	QObject::connect(m_pUI->pushButton_connect, SIGNAL(clicked()), this, SLOT(connection()));
 	QObject::connect(m_pTcpSocket, SIGNAL(error(QAbstractSocket::SocketError)),
-		this, SLOT(displayError(QAbstractSocket::SocketError)));
+		this, SLOT(displaySockError(QAbstractSocket::SocketError)));
 	QObject::connect(m_pTcpSocket, SIGNAL(readyRead()), this, SLOT(readAnswer()));
 	m_pUI->lineEdit_host->setText(m_host.c_str());
 	m_pUI->lineEdit_port->setText(boost::lexical_cast<std::string>(m_port).c_str());
