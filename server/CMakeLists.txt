@@ -18,4 +18,4 @@ target_link_libraries( ${target_name}
 
 target_compile_definitions( ${target_name} PRIVATE PROGNAME="${target_name}" )
 
-install(TARGETS ${target_name} DESTINATION ${INSTALL_DIR})
+install(TARGETS ${target_name} DESTINATION ${INSTALL_BINARY_SUBDIR} )

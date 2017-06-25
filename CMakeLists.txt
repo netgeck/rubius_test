@@ -12,7 +12,13 @@ find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS})
 set( GTEST_RESULT_ROOT ${CMAKE_CURRENT_BINARY_DIR}/Testing )
 
-set (INSTALL_DIR ${CMAKE_BINARY_DIR}/install)
+# Если не задан установочный префикс - будем ставить в директорию install сборочной директории.
+if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+	set (CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install" CACHE PATH "default install path" FORCE )
+endif()
+
+# под-директория для установки бинарников
+set( INSTALL_BINARY_SUBDIR . )
 
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/include )
 
