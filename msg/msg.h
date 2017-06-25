@@ -19,6 +19,7 @@
 
 
 #define ERROR_PKG_IS_NOT_FULL	"пакет не заполнен"
+#define ERROR_OUT_OF_RANGE	"Данных больше чем указано в заголовке пакета"
 
 
 FORWARD_DECLARE_TEST(package, request_pack_unpack);
@@ -47,6 +48,11 @@ public:
 	 */
 	void pushBack(std::vector<char> chunk) {
 		m_buffer.insert(m_buffer.end(), chunk.begin(), chunk.end());
+		
+		if(m_buffer.size() > sizeof(header) && 
+			m_buffer.size() > *reinterpret_cast<const header*>(&m_buffer[0])) {
+			throw std::out_of_range(ERROR_OUT_OF_RANGE);
+		}
 	};
 	
 	/**
@@ -56,6 +62,11 @@ public:
 	 */
 	void pushBack(const char* src, size_t size) {
 		m_buffer.insert(m_buffer.end(), src, src + size);
+		
+		if(m_buffer.size() > sizeof(header) 
+			&& m_buffer.size() > *reinterpret_cast<const header*>(&m_buffer[0])) {
+			throw std::out_of_range(ERROR_OUT_OF_RANGE);
+		}
 	}
 	
 	/**
@@ -65,6 +76,11 @@ public:
 	 */
 	void pushBack(const char* src_begin, const char* src_end) {
 		m_buffer.insert(m_buffer.end(), src_begin, src_end);
+		
+		if(m_buffer.size() > sizeof(header) && 
+			m_buffer.size() > *reinterpret_cast<const header*>(&m_buffer[0])) {
+			throw std::out_of_range(ERROR_OUT_OF_RANGE);
+		}
 	}
 	
 	/**
@@ -196,7 +212,9 @@ static const char* file_end(const package& pkg) {
 /// работа с пакетом сообщения как с ответом
 namespace answer {
 
-typedef uint32_t value;	//!< тип значения в ответном пакете
+typedef int32_t value;	//!< тип значения в ответном пакете.
+
+static const value errCode = -1; //!< Код ошибки
 
 /**
  * @brief Заполнить универсальный пакет значением ответа

@@ -44,7 +44,7 @@ private:
 	 * @brief Отправка ответного пакета клиенту
 	 * @param result результат
 	 */
-	void answer(uint32_t result);
+	void answer(msg::answer::value result);
 	
 	QTcpSocket* m_pSock;	//!< сокет для связи с клиентом
 	msg::package m_recvPkg;	//!< принимаемый пакет

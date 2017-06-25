@@ -16,6 +16,16 @@ TEST(package, empty) {
 	EXPECT_FALSE(pkg.isFull());
 }
 
+TEST(package, overflow) {
+	msg::package pkg;
+	
+	msg::package::header header = 0;
+	pkg.pushBack(reinterpret_cast<char*>(&header), sizeof(header));
+	
+	// добавление данных, тогда как, в заголовке задано что данных больше не будет
+	EXPECT_THROW(pkg.pushBack(std::vector<char>(1, 'x')), std::out_of_range);
+}
+
 TEST(package, request_pack_unpack) {
 	std::string word("test");
 	std::string fileContent("test test test");

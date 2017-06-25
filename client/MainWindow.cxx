@@ -58,8 +58,12 @@ MainWindow::~MainWindow() {
 	delete m_pUI;
 }
 
-void MainWindow::result(uint32_t res) {
-	m_pUI->label_resOut->setText(tr(boost::lexical_cast<std::string>(res).c_str()));
+void MainWindow::result(msg::answer::value res) {
+	if (res == msg::answer::errCode) {
+		displayAnswerError("Сервер вернул ошибку.");
+	} else {
+		m_pUI->label_resOut->setText(tr(boost::lexical_cast<std::string>(res).c_str()));
+	}
 	m_pUI->pushButton_send->setEnabled(true);
 }
 
@@ -167,13 +171,24 @@ void MainWindow::displayFileError(const QString& err) {
 		tr("Не удалось открыть файл: %1.").arg(err));
 }
 
+void MainWindow::displayAnswerError(const QString& err) {
+	QMessageBox::information(this, tr("Клиент"),
+		tr("Ошибка при получении ответа: %1.").arg(err));
+}
+
 void MainWindow::readAnswer() {
 	std::vector<char> buffer(READBUFFER_SIZE);
 	
 	size_t avail = m_pTcpSocket->bytesAvailable();
 	int byteRead = m_pTcpSocket->read(buffer.data(), std::min(buffer.size(), avail));
 	
-	m_answer.pushBack(&(*buffer.begin()), byteRead);
+	try {
+		m_answer.pushBack(&(*buffer.begin()), byteRead);
+	} catch(std::exception& e) {
+		displayAnswerError("Не корректный пакет с ответом");
+		m_answer.clear();
+		return;
+	}
 	
 	if (m_answer.isFull()) {
 		result(msg::answer::getNum(m_answer));

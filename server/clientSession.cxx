@@ -24,7 +24,14 @@ void clientSession::readPkg() {
 	size_t avail = m_pSock->bytesAvailable();
 	int byteRead = m_pSock->read(buffer.data(), std::min(buffer.size(), avail));
 
-	m_recvPkg.pushBack(&(*buffer.begin()), byteRead);
+	try {
+		m_recvPkg.pushBack(&(*buffer.begin()), byteRead);
+	} catch(std::exception& e) {
+		syslog(LOG_ERR, "Ошибка получения пакета: %s", e.what());
+		answer(msg::answer::errCode); // возвращаем ошибку клиенту
+		m_recvPkg.clear();
+		return;
+	}
 
 	if (m_recvPkg.isFull()) {
 		handlePkg();
@@ -39,7 +46,7 @@ void clientSession::readPkg() {
 }
 	
 void clientSession::handlePkg() {
-	uint32_t res(0);
+	msg::answer::value res(0);
 	std::string word(msg::request::word_begin(m_recvPkg), msg::request::word_end(m_recvPkg));
 
 	std::vector<char> mappedFile(msg::request::file_begin(m_recvPkg), msg::request::file_end(m_recvPkg));
@@ -55,7 +62,7 @@ void clientSession::handlePkg() {
 	answer(res);
 }
 	
-void clientSession::answer(uint32_t result) {
+void clientSession::answer(msg::answer::value result) {
 	msg::package resPkg;
 	msg::answer::packageFill(resPkg, result);
 

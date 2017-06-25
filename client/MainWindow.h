@@ -35,7 +35,7 @@ private:
 	 * @brief Вывод результата (число вхождений слова в файл)
 	 * @param res	результат
 	 */
-	void result(uint32_t);
+	void result(msg::answer::value);
 
 	/// Делаем кнопку отправки активной/неактивной
 	void checkSendAbility();
@@ -45,6 +45,8 @@ private:
 	 * @param err	описание ошибки
 	 */
 	void displayFileError(const QString& err);
+	
+	void displayAnswerError(const QString& err);
 	
 private slots:
 	void displaySockError(QAbstractSocket::SocketError socketError); //!< ошибки соединения
