@@ -11,7 +11,7 @@
 #include <iostream>
 #endif
 
-#include <defPort.h>
+#include <common.h>
 #include <msg.h>
 
 #include "MainWindow.h"

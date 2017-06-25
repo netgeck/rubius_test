@@ -9,11 +9,9 @@
 #include <QtCore/QTextCodec>
 #include <QTextCodec>
 
+#include <common.h>
+
 #include "MainWindow.h"
-
-
-#define  ENCODING_UTF8	"UTF-8"
-
 
 /*
  * @brief точка входа в программу клиента

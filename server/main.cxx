@@ -11,7 +11,8 @@
 #include <QCoreApplication>
 #include <QTextCodec>
 
-#include <defPort.h>
+#include <common.h>
+
 #include <tcpServer.h>
 
 /*
@@ -34,10 +35,9 @@ int main(int argc, char** argv) {
 	syslog(LOG_NOTICE, "Cтарт сервера. Port: %d", port);
 
 	// настройка кодека для корректной обработки русских букв
-	QTextCodec *codec1 = QTextCodec::codecForName("UTF-8");
-	QTextCodec::setCodecForLocale(codec1);
-	QTextCodec::setCodecForTr(codec1);
-	QTextCodec::setCodecForCStrings(codec1);
+	QTextCodec::setCodecForTr(QTextCodec::codecForName(ENCODING_UTF8));
+	QTextCodec::setCodecForLocale(QTextCodec::codecForName(ENCODING_UTF8));
+	QTextCodec::setCodecForCStrings(QTextCodec::codecForName(ENCODING_UTF8));
 
 	QCoreApplication app(argc, argv);
 	tcpServer server(port);
