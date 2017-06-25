@@ -25,15 +25,13 @@
 MainWindow::MainWindow(QWidget *parent) :
 QMainWindow(parent),
 m_pUI(new Ui::MainWindow),
-m_port(PORT_DEFAULT),
-m_host(IP_LOCALHOST) {
+m_port(PORT_DEFAULT) {
 	using namespace std::placeholders;
 	m_pUI->setupUi(this);
 	
 	m_pTcpSocket = new QTcpSocket(this);
 	
 	QObject::connect(m_pUI->pushButton_send, SIGNAL(clicked()), this, SLOT(send()));
-	QObject::connect(m_pUI->lineEdit_host, SIGNAL(editingFinished()), this, SLOT(setHost()));
 	QObject::connect(m_pUI->lineEdit_port, SIGNAL(editingFinished()), this, SLOT(setPort()));
 	QObject::connect(m_pUI->pushButton_fChoose, SIGNAL(clicked()), this, SLOT(chooseFile()));
 	QObject::connect(m_pUI->lineEdit_word, SIGNAL(textChanged(const QString &)),
@@ -43,7 +41,7 @@ m_host(IP_LOCALHOST) {
 	QObject::connect(m_pTcpSocket, SIGNAL(error(QAbstractSocket::SocketError)),
 		this, SLOT(displaySockError(QAbstractSocket::SocketError)));
 	QObject::connect(m_pTcpSocket, SIGNAL(readyRead()), this, SLOT(readAnswer()));
-	m_pUI->lineEdit_host->setText(m_host.c_str());
+	m_pUI->lineEdit_host->setText(IP_LOCALHOST);
 	m_pUI->lineEdit_port->setText(boost::lexical_cast<std::string>(m_port).c_str());
 	m_pUI->lineEdit_port->setValidator(new QIntValidator(PORT_MIN, PORT_MAX));
 	// Только буквы кириллического и латинского алфавита и цифры
@@ -78,8 +76,10 @@ void MainWindow::send() {
 	m_pUI->pushButton_send->setEnabled(false);
 	m_pUI->label_resOut->clear();
 	msg::package pkg;
+	std::string word = m_pUI->lineEdit_word->text().toStdString();
 	msg::request::packageFill(pkg, 
-		m_word.begin(), m_word.end(), m_mappedFile.begin(), m_mappedFile.end());
+		word.begin(), word.end(),
+		m_mappedFile.begin(), m_mappedFile.end());
 	
 	m_pTcpSocket->write(&(*pkg.begin()), pkg.size());
 }
@@ -117,17 +117,11 @@ void MainWindow::chooseFile() {
 	checkSendAbility();
 }
 
-void MainWindow::setHost() {
-	m_host = m_pUI->lineEdit_host->text().toStdString();
-}
-
 void MainWindow::setPort() {
 	m_port = m_pUI->lineEdit_port->text().toUInt();
 }
 
 void MainWindow::setWord() {
-	m_word = m_pUI->lineEdit_word->text().toStdString();
-	
 	checkSendAbility();
 }
 
@@ -173,6 +167,7 @@ void MainWindow::displaySockError(QAbstractSocket::SocketError socketError) {
 
 void MainWindow::displayFileError(const QString& err) {
 	m_pUI->lineEdit_file->clear();
+	m_pUI->label_resOut->clear();
 	checkSendAbility();
 	
 	QMessageBox::information(this, tr("Клиент"),

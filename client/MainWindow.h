@@ -3,7 +3,6 @@
 
 #include <QMainWindow>
 #include <QTcpSocket>
-#include <string>
 
 #include <msg.h>
 
@@ -25,8 +24,6 @@ public:
 private:
 	Ui::MainWindow *m_pUI;
 	uint16_t m_port;		//!< порт сервера
-	std::string m_host;		//!< адрес сервера
-	std::string m_word;		//!< Слово для поиска вхождений в файле
 	std::vector<char> m_mappedFile;	//!< смапированный файл
 	QTcpSocket *m_pTcpSocket;	//!< Сокет для взаимодействия с сервером
 	msg::package m_answer;		//!< ответное сообщение
@@ -54,7 +51,6 @@ private slots:
 	void wordChange(const QString &); //!< Реагируем на изменение слова
 	void send(); //!< Отправка пакета
 	void chooseFile(); //!< выбор файла
-	void setHost(); //!< Задать хост
 	void setPort(); //!< Задать порт
 	void setWord(); //!< Задать слово
 	void connection(); //!< соединение с сервером
