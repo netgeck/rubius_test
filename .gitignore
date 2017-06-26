@@ -14,3 +14,5 @@ rubius_test.creator.user
 rubius_test.files
 rubius_test.includes
 
+# внешние библиотеки
+ExternalLibs/
