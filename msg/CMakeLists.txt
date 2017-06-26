@@ -9,4 +9,6 @@ INTERFACE
 )
 
 # unit-тесты
+if( NOT TEST_DISABLE )
 add_subdirectory( tests )
+endif()
