@@ -4,7 +4,7 @@ project( rubius_test )
 # переменная для отключения тестов. По умолчанию тесты включены
 set ( TEST_DISABLE FALSE CACHE BOOL FALSE )
 
-set (CMAKE_CXX_STANDARD 14)
+set (CMAKE_CXX_STANDARD 11)
 
 # Qt
 find_package(Qt4 REQUIRED QtCore QtGui QtNetwork)
