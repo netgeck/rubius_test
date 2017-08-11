@@ -1,5 +1,5 @@
 /* 
- * File:   stringCutting.h
+ * File:   stringUtils.h
  * Author: kostya
  *
  * Created on 25 июня 2017 г., 18:53

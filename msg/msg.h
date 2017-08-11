@@ -1,5 +1,5 @@
 /* 
- * File:   streamPkg.h
+ * File:   msg.h
  * Author: kostya
  *
  * Created on 24 июня 2017 г., 19:03
