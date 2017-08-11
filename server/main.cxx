@@ -6,10 +6,10 @@
  */
 
 #include <iostream>
-#include <syslog.h>
 
 #include <QCoreApplication>
 #include <QTextCodec>
+#include <QtDebug>
 
 #include <common.h>
 
@@ -32,13 +32,13 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
-	syslog(LOG_NOTICE, "Cтарт сервера. Port: %d", port);
-
 	// настройка кодека для корректной обработки русских букв
 	QTextCodec::setCodecForTr(QTextCodec::codecForName(ENCODING_UTF8));
 	QTextCodec::setCodecForLocale(QTextCodec::codecForName(ENCODING_UTF8));
 	QTextCodec::setCodecForCStrings(QTextCodec::codecForName(ENCODING_UTF8));
-
+	
+	qDebug() << "Cтарт сервера. Port: " << port;
+	
 	QCoreApplication app(argc, argv);
 	tcpServer server(port);
 	return app.exec();

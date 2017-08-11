@@ -1,11 +1,11 @@
 /* 
- * File:   server.cxx
+ * File:   tcpServer.cxx
  * Author: kostya
  * 
  * Created on 25 июня 2017 г., 17:54
  */
 
-#include <syslog.h>
+#include <QtDebug>
 
 #include <msg.h>
 
@@ -24,7 +24,7 @@ tcpServer::tcpServer(uint16_t port, QObject *parent) : QObject(parent) {
 }
 
 void tcpServer::accept() {
-	syslog(LOG_INFO, "Принято соединение");
+	qDebug() << "Принято соединение";
 	m_sessions.emplace_back(new clientSession(m_server->nextPendingConnection(), this));
 }
 

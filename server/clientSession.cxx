@@ -5,7 +5,7 @@
  * Created on 25 июня 2017 г., 22:44
  */
 
-#include <syslog.h>
+#include <QtDebug>
 
 #include "stringUtils.h"
 
@@ -31,7 +31,7 @@ void clientSession::readPkg() {
 	try {
 		m_recvPkg.pushBack(&(*buffer.begin()), byteRead);
 	} catch(std::exception& e) {
-		syslog(LOG_ERR, "Ошибка получения пакета: %s", e.what());
+		qWarning() << "Ошибка получения пакета: " << e.what();
 		answer(msg::answer::errCode); // возвращаем ошибку клиенту
 		m_recvPkg.clear();
 		return;
@@ -71,6 +71,6 @@ void clientSession::answer(msg::answer::value result) {
 	msg::answer::packageFill(resPkg, result);
 
 	m_pSock->write(&(*resPkg.begin()), resPkg.size());
-	syslog(LOG_INFO, "Передан ответ");
+	qDebug() << "Передан ответ";
 }
 

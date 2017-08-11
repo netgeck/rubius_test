@@ -1,5 +1,5 @@
 /* 
- * File:   server.h
+ * File:   tcpServer.h
  * Author: kostya
  *
  * Created on 25 июня 2017 г., 17:54
