@@ -11,7 +11,6 @@
 #endif
 
 #include <common.h>
-#include <msg.h>
 
 #include "MainWindow.h"
 
@@ -52,8 +51,8 @@ MainWindow::~MainWindow() {
 	delete m_pUI;
 }
 
-void MainWindow::result(msg::answer::value res) {
-	if (res == msg::answer::errCode) {
+void MainWindow::result(qint32 res) {
+	if (res == -1) {
 		displayAnswerError("Сервер вернул ошибку.");
 	} else {
 		m_pUI->label_resOut->setText(QString::number(res));
@@ -73,13 +72,20 @@ void MainWindow::connection() {
 void MainWindow::send() {
 	m_pUI->pushButton_send->setEnabled(false);
 	m_pUI->label_resOut->clear();
-	msg::package pkg;
-	std::string word = m_pUI->lineEdit_word->text().toStdString();
-	msg::request::packageFill(pkg, 
-		word.begin(), word.end(),
-		m_mappedFile.begin(), m_mappedFile.end());
+
+	QByteArray buffer;
+	QDataStream out(&buffer, QIODevice::WriteOnly);
+	qint32 size(0);
+	out << size; // резервируем место под заголовок с размером всего пакета
+	out << m_mappedFile;
+	out << m_pUI->lineEdit_word->text();
 	
-	m_pTcpSocket->write(&(*pkg.begin()), pkg.size());
+	// записываем размер в заголовок пакета
+	size = buffer.size();
+	out.device()->seek(0);
+	out << size;
+	
+	qint64 sended = m_pTcpSocket->write(buffer);
 }
 
 void MainWindow::chooseFile() {
@@ -98,19 +104,15 @@ void MainWindow::chooseFile() {
 	m_pUI->lineEdit_file->setText(fileName);
 	
 	// Маппинг файла
-	std::streampos size;
-	std::ifstream file(fileName.toStdString(), std::ios::in | std::ios::binary | std::ios::ate);
-	if (file.is_open()) {
-		size = file.tellg();
-		m_mappedFile.resize(size);
-		file.seekg(0, std::ios::beg);
-		file.read(m_mappedFile.data(), m_mappedFile.size());
-		file.close();
-	} else {
-		displayFileError(strerror(errno));
+	QFile file(fileName);
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+		displayFileError(file.errorString());
 		m_mappedFile.clear(); // удаляем смапированный файл
 		return;
 	}
+	
+	QTextStream in(&file);
+	in.readAll().swap(m_mappedFile);
 	
 	checkSendAbility();
 }
@@ -187,16 +189,13 @@ void MainWindow::readAnswer() {
 	
 	int byteRead = m_pTcpSocket->read(buffer.data(), std::min(buffer.size(), avail));
 	
-	try {
-		m_answer.pushBack(&(*buffer.begin()), byteRead);
-	} catch(std::exception& e) {
-		displayAnswerError("Не корректный пакет с ответом");
-		m_answer.clear();
-		return;
-	}
+	m_answer.append(buffer.data(), byteRead);
 	
-	if (m_answer.isFull()) {
-		result(msg::answer::getNum(m_answer));
+	if (m_answer.size() == sizeof(qint32)) {
+		QDataStream in(m_answer);
+		qint32 res;
+		in >> res;
+		result(res);
 		m_answer.clear();
 	} else {
 #ifndef NDEBUG

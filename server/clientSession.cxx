@@ -27,19 +27,19 @@ void clientSession::readPkg() {
 	}
 	
 	int byteRead = m_pSock->read(buffer.data(), std::min(buffer.size(), avail));
-
-	try {
-		m_recvPkg.pushBack(&(*buffer.begin()), byteRead);
-	} catch(std::exception& e) {
-		qWarning() << "Ошибка получения пакета: " << e.what();
-		answer(msg::answer::errCode); // возвращаем ошибку клиенту
-		m_recvPkg.clear();
-		return;
+	
+	m_recvPkg.append(buffer.data(), byteRead);
+	
+	static qint32 pkgSize(0);
+	if (pkgSize == 0 && m_recvPkg.size() >= sizeof(qint32)) {
+		QDataStream in(m_recvPkg);
+		in >> pkgSize;
 	}
-
-	if (m_recvPkg.isFull()) {
+	
+	if (m_recvPkg.size() == pkgSize) {
 		handlePkg();
 		m_recvPkg.clear();
+		pkgSize = 0;
 	} else {
 #ifndef NDEBUG
 		std::cout << "Принятый пакет не корректен. Размер пакета: " 
@@ -48,12 +48,17 @@ void clientSession::readPkg() {
 		readPkg();
 	}
 }
-	
-void clientSession::handlePkg() {
-	msg::answer::value res(0);
-	std::string word(msg::request::word_begin(m_recvPkg), msg::request::word_end(m_recvPkg));
 
-	std::vector<char> mappedFile(msg::request::file_begin(m_recvPkg), msg::request::file_end(m_recvPkg));
+void clientSession::handlePkg() {
+	QDataStream in(m_recvPkg);
+	QString qsWord, qsFile;
+	in.skipRawData(sizeof(qint32));
+	in >> qsFile >> qsWord;
+	
+	qint32 res(0);
+	std::string word = qsWord.toStdString();
+
+	std::string mappedFile = qsFile.toStdString();
 
 	// Конвертируем полученный файл в wstring
 	std::wstring file = utf8_to_wstring(&mappedFile.front(), &mappedFile.back());
@@ -66,11 +71,9 @@ void clientSession::handlePkg() {
 	answer(res);
 }
 	
-void clientSession::answer(msg::answer::value result) {
-	msg::package resPkg;
-	msg::answer::packageFill(resPkg, result);
-
-	m_pSock->write(&(*resPkg.begin()), resPkg.size());
+void clientSession::answer(qint32 result) {
+	QDataStream out(m_pSock);
+	out << result;
 	qDebug() << "Передан ответ";
 }
 

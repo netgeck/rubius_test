@@ -4,8 +4,6 @@
 #include <QMainWindow>
 #include <QTcpSocket>
 
-#include <msg.h>
-
 namespace Ui {
 	class MainWindow;
 }
@@ -24,15 +22,15 @@ public:
 private:
 	Ui::MainWindow *m_pUI;
 	uint16_t m_port;		//!< порт сервера
-	std::vector<char> m_mappedFile;	//!< смапированный файл
+	QString m_mappedFile;		//!< смапированный файл
 	QTcpSocket *m_pTcpSocket;	//!< Сокет для взаимодействия с сервером
-	msg::package m_answer;		//!< ответное сообщение
+	QByteArray m_answer;		//!< ответное сообщение
 	
 	/**
 	 * @brief Вывод результата (число вхождений слова в файл)
 	 * @param res	результат
 	 */
-	void result(msg::answer::value);
+	void result(qint32);
 
 	/// Делаем кнопку отправки активной/неактивной
 	void checkSendAbility();

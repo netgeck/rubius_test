@@ -11,8 +11,6 @@
 #include <QObject>
 #include <QTcpSocket>
 
-#include <msg.h>
-
 
 #define READBUFFER_SIZE	512	//!< размер буфера для чтения
 
@@ -44,10 +42,10 @@ private:
 	 * @brief Отправка ответного пакета клиенту
 	 * @param result результат
 	 */
-	void answer(msg::answer::value result);
+	void answer(qint32 result);
 	
 	QTcpSocket* m_pSock;	//!< сокет для связи с клиентом
-	msg::package m_recvPkg;	//!< принимаемый пакет
+	QByteArray m_recvPkg;	//!< принимаемый пакет
 };
 
 
