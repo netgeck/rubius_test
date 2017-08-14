@@ -3,7 +3,6 @@
 #include <QMessageBox>
 #include <ui_MainWindow.h>
 
-#include <string>
 #include <stdint.h>
 #include <fstream>
 #ifndef NDEBUG

@@ -6,6 +6,9 @@
  */
 
 #include <QtDebug>
+#ifndef NDEBUG
+	#include <iostream>
+#endif
 
 #include "stringUtils.h"
 
@@ -51,23 +54,15 @@ void clientSession::readPkg() {
 
 void clientSession::handlePkg() {
 	QDataStream in(m_recvPkg);
-	QString qsWord, qsFile;
-	in.skipRawData(sizeof(qint32));
-	in >> qsFile >> qsWord;
+	QString word, file;
+	in.skipRawData(sizeof(qint32)); // пропускаем заголовок
+	in >> file >> word;
 	
-	qint32 res(0);
-	std::string word = qsWord.toStdString();
-
-	std::string mappedFile = qsFile.toStdString();
-
-	// Конвертируем полученный файл в wstring
-	std::wstring file = utf8_to_wstring(&mappedFile.front(), &mappedFile.back());
-
 	// Нарезаем отдельные слова
 	word_count words;
 	cutter(words, file.begin(), file.end());
 
-	res = words.count(word) ? words[word] : 0;
+	qint32 res = words.count(word) ? words[word] : 0;
 	answer(res);
 }
 	
