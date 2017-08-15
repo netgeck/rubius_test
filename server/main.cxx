@@ -17,7 +17,6 @@
 
 /*
  * @brief точка входа в программу сервер
- * Будет использоваться синхронное API, следовательно многопоточная архитектура.
  */
 int main(int argc, char** argv) {
 	uint16_t port(0);
@@ -33,7 +32,6 @@ int main(int argc, char** argv) {
 	}
 
 	// настройка кодека для корректной обработки русских букв
-	QTextCodec::setCodecForTr(QTextCodec::codecForName(ENCODING_UTF8));
 	QTextCodec::setCodecForLocale(QTextCodec::codecForName(ENCODING_UTF8));
 	QTextCodec::setCodecForCStrings(QTextCodec::codecForName(ENCODING_UTF8));
 	

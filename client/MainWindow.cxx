@@ -41,7 +41,7 @@ m_port(PORT_DEFAULT) {
 	m_pUI->lineEdit_port->setText(QString::number(m_port));
 	m_pUI->lineEdit_port->setValidator(new QIntValidator(PORT_MIN, PORT_MAX));
 	// Только буквы кириллического и латинского алфавита и цифры
-	m_pUI->lineEdit_word->setValidator(new QRegExpValidator(QRegExp(tr(REGEXP_RUS_ENG_NUM)), this));
+	m_pUI->lineEdit_word->setValidator(new QRegExpValidator(QRegExp(REGEXP_RUS_ENG_NUM), this));
 	m_pUI->groupBox_work->setEnabled(false);
 	checkSendAbility();
 }
@@ -88,11 +88,11 @@ void MainWindow::send() {
 }
 
 void MainWindow::chooseFile() {
-	QFileDialog dialog(this, tr("Open text"), QDir::homePath());
+	QFileDialog dialog(this, "Выбор текстового файла", QDir::homePath());
 	dialog.setFileMode(QFileDialog::ExistingFile);
 	QStringList filters;
-	filters	<< "Text files (*.txt)"
-		<< "Any files (*)";
+	filters	<< "Текстовые файлы (*.txt)"
+		<< "Любые файлы (*)";
 	dialog.setNameFilters(filters);
 	if (!dialog.exec()) {
 		return;
@@ -142,23 +142,23 @@ void MainWindow::displaySockError(QAbstractSocket::SocketError socketError) {
 	
 	switch (socketError) {
 		case QAbstractSocket::RemoteHostClosedError:
-			QMessageBox::information(this, tr("Клиент"),
-				tr("Подключение разорвано другой стороной"));
+			QMessageBox::information(this, "Клиент",
+				"Подключение разорвано другой стороной");
 			break;
 		case QAbstractSocket::HostNotFoundError:
-			QMessageBox::information(this, tr("Клиент"),
-				tr("Хост не найден. Проверьте правильно ли "
-				"введено имя хоста и порт"));
+			QMessageBox::information(this, "Клиент",
+				"Хост не найден. Проверьте правильно ли "
+				"введено имя хоста и порт");
 			break;
 		case QAbstractSocket::ConnectionRefusedError:
-			QMessageBox::information(this, tr("Клиент"),
-				tr("Подключение не установлено. "
+			QMessageBox::information(this, "Клиент",
+				"Подключение не установлено. "
 				"Убедитесь что сервер запущен, "
-				"и проверьте правильно ли заданы хост и порт."));
+				"и проверьте правильно ли заданы хост и порт.");
 			break;
 		default:
-			QMessageBox::information(this, tr("Клиент"),
-				tr("Получена ошибка: %1.").arg(m_pTcpSocket->errorString()));
+			QMessageBox::information(this, "Клиент",
+				QString("Получена ошибка: %1.").arg(m_pTcpSocket->errorString()));
 	}
 
 	m_pUI->groupBox_net->setEnabled(true);
@@ -169,13 +169,13 @@ void MainWindow::displayFileError(const QString& err) {
 	m_pUI->label_resOut->clear();
 	checkSendAbility();
 	
-	QMessageBox::information(this, tr("Клиент"),
-		tr("Не удалось открыть файл: %1.").arg(err));
+	QMessageBox::information(this, "Клиент",
+		QString("Не удалось открыть файл: %1.").arg(err));
 }
 
 void MainWindow::displayAnswerError(const QString& err) {
-	QMessageBox::information(this, tr("Клиент"),
-		tr("Ошибка при получении ответа: %1.").arg(err));
+	QMessageBox::information(this, "Клиент",
+		QString("Ошибка при получении ответа: %1.").arg(err));
 }
 
 void MainWindow::readAnswer() {

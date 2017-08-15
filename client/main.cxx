@@ -17,7 +17,6 @@
  * @brief точка входа в программу клиента
  */
 int main(int argc, char *argv[]) {
-	QTextCodec::setCodecForTr(QTextCodec::codecForName(ENCODING_UTF8));
 	QTextCodec::setCodecForLocale(QTextCodec::codecForName(ENCODING_UTF8));
 	QTextCodec::setCodecForCStrings(QTextCodec::codecForName(ENCODING_UTF8));
 	
