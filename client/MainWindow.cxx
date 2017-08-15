@@ -54,7 +54,7 @@ void MainWindow::result(qint32 res) {
 	if (res == -1) {
 		displayAnswerError("Сервер вернул ошибку.");
 	} else {
-		m_pUI->label_resOut->setText(QString::number(res));
+		m_pUI->lineEdit_result->setText(QString::number(res));
 	}
 	m_pUI->pushButton_send->setEnabled(true);
 }
@@ -70,7 +70,7 @@ void MainWindow::connection() {
 
 void MainWindow::send() {
 	m_pUI->pushButton_send->setEnabled(false);
-	m_pUI->label_resOut->clear();
+	m_pUI->lineEdit_result->clear();
 
 	QByteArray buffer;
 	QDataStream out(&buffer, QIODevice::WriteOnly);
@@ -166,7 +166,7 @@ void MainWindow::displaySockError(QAbstractSocket::SocketError socketError) {
 
 void MainWindow::displayFileError(const QString& err) {
 	m_pUI->lineEdit_file->clear();
-	m_pUI->label_resOut->clear();
+	m_pUI->lineEdit_result->clear();
 	checkSendAbility();
 	
 	QMessageBox::information(this, "Клиент",
