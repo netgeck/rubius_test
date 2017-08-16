@@ -56,7 +56,7 @@ void MainWindow::result(qint32 res) {
 	} else {
 		m_pUI->lineEdit_result->setText(QString::number(res));
 	}
-	m_pUI->pushButton_send->setEnabled(true);
+	m_pUI->groupBox_work->setEnabled(true);
 }
 
 void MainWindow::connection() {
@@ -66,11 +66,12 @@ void MainWindow::connection() {
 		m_pUI->lineEdit_port->text().toUInt());
 	
 	m_pUI->groupBox_work->setEnabled(true);
+	m_pUI->lineEdit_result->clear();
 }
 
 void MainWindow::send() {
-	m_pUI->pushButton_send->setEnabled(false);
-	m_pUI->lineEdit_result->clear();
+	m_pUI->groupBox_work->setEnabled(false);
+	m_pUI->lineEdit_result->setText("Ожидание ответа...");
 
 	QByteArray buffer;
 	QDataStream out(&buffer, QIODevice::WriteOnly);
