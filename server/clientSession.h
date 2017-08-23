@@ -12,9 +12,6 @@
 #include <QTcpSocket>
 
 
-#define READBUFFER_SIZE	512	//!< размер буфера для чтения
-
-
 /**
  * @brief Класс сессия.
  * Слушает входящие пакеты, обрабатывает их и отправляет результат клиенту.
@@ -33,6 +30,12 @@ public:
 public slots:
 	/// Чтение пакета из сокета
 	void readPkg();
+	
+	/**
+	 * @brief обработка ошибок
+	 * @param socketError
+	 */
+	void socketError(QAbstractSocket::SocketError error);
 	
 private:
 	/// Обработка полученного пакета

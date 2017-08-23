@@ -14,6 +14,8 @@
 
 #define ENCODING_UTF8	"UTF-8"
 
+#define RET_ERROR	-1
+
 
 #endif /* __COMMON_HEADER__H__ */
 

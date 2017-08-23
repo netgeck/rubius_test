@@ -5,9 +5,6 @@
 
 #include <stdint.h>
 #include <fstream>
-#ifndef NDEBUG
-#include <iostream>
-#endif
 
 #include <common.h>
 
@@ -16,7 +13,6 @@
 
 #define IP_LOCALHOST	"127.0.0.1"
 #define REGEXP_RUS_ENG_NUM	"^[а-яА-ЯёЁa-zA-Z0-9]+$"
-#define READBUFFER_SIZE	32
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -51,7 +47,7 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::result(qint32 res) {
-	if (res == -1) {
+	if (res == RET_ERROR) {
 		displayAnswerError("Сервер вернул ошибку.");
 	} else {
 		m_pUI->lineEdit_result->setText(QString::number(res));
@@ -86,6 +82,9 @@ void MainWindow::send() {
 	out << size;
 	
 	qint64 sended = m_pTcpSocket->write(buffer);
+	if (sended < buffer.size()) {
+		qWarning() << "Пакет отправлен не полностью: " << sended << " из " << buffer.size();
+	}
 }
 
 void MainWindow::chooseFile() {
@@ -180,28 +179,20 @@ void MainWindow::displayAnswerError(const QString& err) {
 }
 
 void MainWindow::readAnswer() {
-	std::vector<char> buffer(READBUFFER_SIZE);
-	
-	size_t avail = m_pTcpSocket->bytesAvailable();
-	if (!avail) {
+	if (m_pTcpSocket->bytesAvailable() < sizeof(qint32)) {
 		return;
 	}
 	
-	int byteRead = m_pTcpSocket->read(buffer.data(), std::min(buffer.size(), avail));
+	QByteArray buffer(sizeof(qint32), 0);
 	
-	m_answer.append(buffer.data(), byteRead);
-	
-	if (m_answer.size() == sizeof(qint32)) {
-		QDataStream in(m_answer);
-		qint32 res;
-		in >> res;
-		result(res);
-		m_answer.clear();
-	} else {
-#ifndef NDEBUG
-		std::cout << "Принятый пакет не корректен. Размер пакета: " 
-			<< m_answer.size() << "байт. Ждём продолжения" << std::endl;
-#endif
-		readAnswer();
+	int byteRead = m_pTcpSocket->read(buffer.data(), buffer.size());
+
+	if (m_pTcpSocket->bytesAvailable()) {	// если остались лишнии данные
+		m_pTcpSocket->readAll();	// очищаем вычитыванием
 	}
+	
+	QDataStream input(buffer);
+	qint32 res;
+	input >> res;
+	result(res);
 }

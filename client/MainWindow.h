@@ -24,7 +24,6 @@ private:
 	uint16_t m_port;		//!< порт сервера
 	QString m_mappedFile;		//!< смапированный файл
 	QTcpSocket *m_pTcpSocket;	//!< Сокет для взаимодействия с сервером
-	QByteArray m_answer;		//!< ответное сообщение
 	
 	/**
 	 * @brief Вывод результата (число вхождений слова в файл)

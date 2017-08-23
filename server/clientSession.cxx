@@ -6,9 +6,8 @@
  */
 
 #include <QtDebug>
-#ifndef NDEBUG
-	#include <iostream>
-#endif
+
+#include <common.h>
 
 #include "stringUtils.h"
 
@@ -19,37 +18,34 @@ clientSession::clientSession(QTcpSocket *socket, QObject *parent) : QObject(pare
 m_pSock(socket), 
 m_recvPkg() {
 	connect(m_pSock, SIGNAL(readyRead()), this, SLOT(readPkg()));
+	connect(m_pSock, SIGNAL(error(QAbstractSocket::SocketError)), this, 
+		SLOT(socketError(QAbstractSocket::SocketError)));
 }
-	
-void clientSession::readPkg() {
-	std::vector<char> buffer(READBUFFER_SIZE);
 
-	size_t avail = m_pSock->bytesAvailable();
-	if (!avail) {
-		return;
-	}
-	
-	int byteRead = m_pSock->read(buffer.data(), std::min(buffer.size(), avail));
-	
-	m_recvPkg.append(buffer.data(), byteRead);
+void clientSession::readPkg() {
+	m_recvPkg.append(m_pSock->readAll());
 	
 	static qint32 pkgSize(0);
 	if (pkgSize == 0 && m_recvPkg.size() >= sizeof(qint32)) {
 		QDataStream in(m_recvPkg);
 		in >> pkgSize;
+		qDebug() << "Приём пакета размером " <<  pkgSize << "...";
 	}
 	
 	if (m_recvPkg.size() == pkgSize) {
+		qDebug() << "Пакет принят";
 		handlePkg();
 		m_recvPkg.clear();
 		pkgSize = 0;
-	} else {
-#ifndef NDEBUG
-		std::cout << "Принятый пакет не корректен. Размер пакета: " 
-			<< m_recvPkg.size() << "байт. Ждём продолжения" << std::endl;
-#endif
-		readPkg();
+	} else if (m_recvPkg.size() > pkgSize) {
+		qWarning() << "Размер пакета превысил ожидания! " << m_recvPkg.size() << " из " << pkgSize;
+		answer(RET_ERROR);
+		m_recvPkg.clear();
 	}
+}
+
+void clientSession::socketError(QAbstractSocket::SocketError /*error*/) {
+	qWarning() << "Ошибка соединения: " << m_pSock->errorString();
 }
 
 void clientSession::handlePkg() {
