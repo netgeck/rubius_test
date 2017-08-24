@@ -27,6 +27,29 @@ static bool isWordChar(QChar c) {
 }
 
 /**
+ * Искать слово в заданном диапазоне.
+ * Возвращает итератор на символ следующий за словом.
+ * Если в диапазоне нет слов вернёт end;
+ * @param words	список найденных слов
+ * @param begin начало диапазона
+ * @param end конец диапазона
+ * @return итератор на символ следующий за словом
+ */
+static QString::iterator findWord(word_count& words, QString::iterator begin, QString::iterator end) {
+	auto it_correct = std::find_if(begin, end, isWordChar);
+	if (it_correct == end) {
+		return end;
+	}
+	
+	auto it_incorrect = std::find_if_not(it_correct, end, isWordChar);
+	
+	// добавляем слово и увеличиваем счётчик
+	words[QString(it_correct, it_incorrect - it_correct)]++;
+		
+	return it_incorrect;
+}
+
+/**
  * @brief Функция нарезки строки на отдельные слова.
  * Словом считается последовательность букв и/или цифр.
  * Результат записывается в ассоциативный контейнер <слово, частота>.
@@ -35,26 +58,9 @@ static bool isWordChar(QChar c) {
  * @param end итератор конца строки
  */
 static void cutter(word_count& words, QString::iterator begin, QString::iterator end) {
-	auto it_correct = std::find_if(begin, end, isWordChar);
-	if (it_correct == end) {
-		return;
+	for (auto it = begin; it != end;) {
+		it = findWord(words, it, end);
 	}
-	
-	auto it_incorrect = std::find_if_not(it_correct, end, isWordChar);
-	// добавляем слово и увеличиваем счётчик
-	words[QString(it_correct, it_incorrect - it_correct)]++;
-#ifndef NDEBUG
-	auto it_last = words.find(QString(it_correct, it_incorrect - it_correct));
-	if (it_last != words.end()) {
-		qDebug() << "добавлено \"" << it_last->first << "\": " << it_last->second;
-	}
-#endif
-	
-	if (it_incorrect == end) {
-		return;
-	}
-	
-	cutter(words, it_incorrect, end);
 }
 
 
